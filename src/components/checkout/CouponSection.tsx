@@ -1,0 +1,180 @@
+import { useState, FormEvent } from "react";
+import { Coupon } from "../../types";
+import { AVAILABLE_COUPONS, validateCoupon } from "../../utils/billing";
+import { fmt } from "../../utils/formatters";
+import { IcCheck } from "../common/Icons";
+
+interface CouponSectionProps {
+  subtotal: number;
+  appliedCoupon: Coupon | null;
+  onApplyCoupon: (coupon: Coupon) => void;
+  onRemoveCoupon: () => void;
+}
+
+export function CouponSection({
+  subtotal,
+  appliedCoupon,
+  onApplyCoupon,
+  onRemoveCoupon,
+}: CouponSectionProps) {
+  const [couponInput, setCouponInput] = useState("");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const handleApply = (e?: FormEvent) => {
+    if (e) e.preventDefault();
+    const clean = couponInput.trim().toUpperCase();
+    setErrorMessage(null);
+    setSuccessMessage(null);
+
+    const result = validateCoupon(clean, subtotal, appliedCoupon);
+    if (!result.valid || !result.coupon) {
+      setErrorMessage(result.error || "Invalid coupon code.");
+      return;
+    }
+
+    onApplyCoupon(result.coupon);
+    setCouponInput("");
+    setSuccessMessage(`Coupon ${result.coupon.code} applied successfully!`);
+  };
+
+  const handleQuickFill = (code: string) => {
+    setCouponInput(code);
+    setErrorMessage(null);
+    setSuccessMessage(null);
+    const result = validateCoupon(code, subtotal, appliedCoupon);
+    if (!result.valid || !result.coupon) {
+      setErrorMessage(result.error || "Coupon criteria not met.");
+      return;
+    }
+    onApplyCoupon(result.coupon);
+    setSuccessMessage(`Coupon ${result.coupon.code} applied successfully!`);
+  };
+
+  return (
+    <div className="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-[0_8px_24px_rgba(15,32,68,0.08)] backdrop-blur-md">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-poppins text-sm font-bold text-[#0F2044]">
+          Offers &amp; Coupons
+        </h3>
+        <span className="text-[11px] text-[#7A8493] font-medium">
+          Demo Store Promo Codes
+        </span>
+      </div>
+
+      {/* Applied Coupon Banner */}
+      {appliedCoupon ? (
+        <div className="rounded-xl border border-[#2E9E44]/30 bg-[#EEF8F0] p-3 flex items-center justify-between qless-scale-in">
+          <div className="flex items-center gap-2.5">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E9E44] text-white">
+              <IcCheck />
+            </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-mono text-xs font-bold text-[#2E9E44] tracking-wider">
+                  {appliedCoupon.code}
+                </span>
+                <span className="rounded bg-white/80 px-1.5 py-0.2 text-[10px] font-bold text-[#2E9E44]">
+                  APPLIED
+                </span>
+              </div>
+              <p className="text-[11px] text-[#288B3B]">
+                {appliedCoupon.description}
+              </p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={onRemoveCoupon}
+            className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 shadow-xs hover:bg-red-50 transition active:scale-95"
+            aria-label={`Remove coupon ${appliedCoupon.code}`}
+          >
+            Remove
+          </button>
+        </div>
+      ) : (
+        /* Coupon Input Form */
+        <form onSubmit={handleApply} className="space-y-2.5">
+          <div className="flex gap-2">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                id="coupon-code-input"
+                value={couponInput}
+                onChange={(e) => {
+                  setCouponInput(e.target.value);
+                  if (errorMessage) setErrorMessage(null);
+                  if (successMessage) setSuccessMessage(null);
+                }}
+                placeholder="Enter coupon code (e.g. SAVE10)"
+                className="w-full rounded-xl border border-black/10 bg-[#F9FAFB] py-2.5 px-3.5 font-mono text-xs font-bold uppercase text-[#0F2044] placeholder-[#9AA3AF] placeholder:normal-case transition focus:border-[#2E9E44] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2E9E44]/20"
+                aria-label="Enter promotional coupon code"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={!couponInput.trim()}
+              className="rounded-xl bg-[#0F2044] px-4 py-2.5 font-poppins text-xs font-semibold text-white shadow-xs transition hover:bg-[#1A3163] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+            >
+              Apply
+            </button>
+          </div>
+
+          {/* Validation Feedback Messages */}
+          {errorMessage && (
+            <div
+              role="alert"
+              className="rounded-xl border border-red-200 bg-red-50 p-2.5 text-xs text-red-700 qless-fade-in flex items-start gap-2"
+            >
+              <span className="font-bold">✕</span>
+              <p className="flex-1">{errorMessage}</p>
+            </div>
+          )}
+
+          {successMessage && (
+            <div
+              role="status"
+              className="rounded-xl border border-[#2E9E44]/30 bg-[#EEF8F0] p-2.5 text-xs text-[#288B3B] qless-fade-in flex items-start gap-2"
+            >
+              <span className="font-bold">✓</span>
+              <p className="flex-1">{successMessage}</p>
+            </div>
+          )}
+
+          {/* Quick Clickable Demo Coupon Badges */}
+          <div className="pt-2">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] mb-1.5">
+              Available Demo Coupons
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {AVAILABLE_COUPONS.map((coupon) => {
+                const meetsMin = !coupon.minSubtotal || subtotal >= coupon.minSubtotal;
+                return (
+                  <button
+                    key={coupon.code}
+                    type="button"
+                    onClick={() => handleQuickFill(coupon.code)}
+                    className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs transition active:scale-95 ${
+                      meetsMin
+                        ? "border-[#2E9E44]/30 bg-[#EEF8F0] hover:bg-[#E2F4E6] text-[#0F2044]"
+                        : "border-black/5 bg-[#F9FAFB] hover:bg-[#F0F2F5] text-[#7A8493]"
+                    }`}
+                  >
+                    <span className="font-mono font-bold text-[#2E9E44]">
+                      {coupon.code}
+                    </span>
+                    <span className="text-[11px] text-[#7A8493]">
+                      · {coupon.code === "SAVE10" ? "10% OFF" : `₹50 OFF (min ${fmt(500)})`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,276 @@
+@import "tailwindcss";
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    overflow-x: hidden;
+    max-width: 100%;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+  }
+}
+
+@layer utilities {
+  .qless-app-bg {
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    background-repeat: no-repeat;
+  }
+
+  .font-poppins {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  .font-inter {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-alegreya {
+    font-family: 'Alegreya Sans SC', sans-serif;
+  }
+
+  .qless-scan-line {
+    animation: qlessScanLine 2.4s ease-in-out infinite;
+  }
+
+  .qless-pulse-border {
+    animation: qlessPulseBorder 2s ease-in-out infinite;
+  }
+
+  .qless-fade-in {
+    animation: qlessFadeIn 200ms ease-out both;
+  }
+
+  .qless-scale-in {
+    animation: qlessScaleIn 200ms ease-out both;
+  }
+}
+
+@keyframes qlessFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes qlessScaleIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes qlessScanLine {
+  0%, 100% {
+    top: 12%;
+    opacity: 0.9;
+  }
+
+  50% {
+    top: 84%;
+    opacity: 0.5;
+  }
+}
+
+@keyframes qlessPulseBorder {
+  0%, 100% {
+    border-color: rgba(46, 158, 68, 0.35);
+    box-shadow: 0 0 0 0 rgba(46, 158, 68, 0.06);
+  }
+
+  50% {
+    border-color: rgba(46, 158, 68, 0.7);
+    box-shadow: 0 0 24px 2px rgba(46, 158, 68, 0.10);
+  }
+}
+
+/* Barcode scanner beam */
+@keyframes qlessBeam {
+  0%   { top: 10%; opacity: 1; }
+  48%  { top: 88%; opacity: 0.7; }
+  50%  { top: 88%; opacity: 0.7; }
+  98%  { top: 10%; opacity: 1; }
+  100% { top: 10%; opacity: 1; }
+}
+
+.qless-beam {
+  animation: qlessBeam 1.8s ease-in-out infinite;
+}
+
+/* Corner bracket pulse on scanning */
+@keyframes qlessCornerPulse {
+  0%, 100% { opacity: 0.4; }
+  50%       { opacity: 1;   }
+}
+
+.qless-corner-pulse {
+  animation: qlessCornerPulse 1.8s ease-in-out infinite;
+}
+
+/* Item pop-in when added to cart */
+@keyframes qlessPopIn {
+  0%   { opacity: 0; transform: scale(0.88) translateY(8px); }
+  65%  { transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.qless-pop-in {
+  animation: qlessPopIn 320ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* Barcode stripe flicker while scanning */
+@keyframes qlessBarFlicker {
+  0%, 100% { opacity: 1;   }
+  45%       { opacity: 0.5; }
+  55%       { opacity: 0.9; }
+}
+
+.qless-bar-flicker {
+  animation: qlessBarFlicker 1.8s ease-in-out infinite;
+}
+
+/* html5-qrcode container rules for barcode, store entrance, and guard scanners */
+#qless-html5-camera-view,
+#qless-store-entrance-scanner,
+#qless-guard-camera-viewport {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: none !important;
+  position: relative;
+  overflow: hidden;
+}
+
+#qless-html5-camera-view video,
+#qless-store-entrance-scanner video,
+#qless-guard-camera-viewport video {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 220px !important;
+  object-fit: cover !important;
+  border-radius: 1rem;
+}
+
+#qless-html5-camera-view img,
+#qless-store-entrance-scanner img,
+#qless-guard-camera-viewport img {
+  display: none !important;
+}
+
+#qless-html5-camera-view > div:first-child,
+#qless-store-entrance-scanner > div:first-child,
+#qless-guard-camera-viewport > div:first-child {
+  border: none !important;
+}
+
+#qless-html5-camera-view #qr-shaded-region,
+#qless-store-entrance-scanner #qr-shaded-region,
+#qless-guard-camera-viewport #qr-shaded-region {
+  border-radius: 1rem;
+}
+
+/* Safe area padding utilities for mobile devices */
+.pb-safe {
+  padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+}
+
+.pb-safe-nav {
+  padding-bottom: max(5rem, calc(4.5rem + env(safe-area-inset-bottom, 0px)));
+}
+
+/* Print styling for digital receipts */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  .qless-app-bg {
+    background-image: none !important;
+    background-color: white !important;
+    padding: 0 !important;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .printable-receipt {
+    box-shadow: none !important;
+    border: 1px solid #ddd !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    padding: 1.5rem !important;
+    background: white !important;
+  }
+}
+
+/* Floor plan beacon pulse animation */
+@keyframes qlessBeaconGlow {
+  0%, 100% {
+    transform: scale(0.85);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.15;
+  }
+}
+
+.qless-beacon-glow {
+  animation: qlessBeaconGlow 2s ease-in-out infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   Accessibility: prefers-reduced-motion overrides (Phase 2 Fix 4)
+   Disables or neutralizes nonessential vestibular motion triggers
+   ───────────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .qless-scan-line,
+  .qless-beam,
+  .qless-corner-pulse,
+  .qless-bar-flicker,
+  .qless-pulse-border,
+  .qless-beacon-glow,
+  .animate-pulse,
+  .animate-ping,
+  .animate-bounce {
+    animation: none !important;
+  }
+
+  .qless-pop-in,
+  .qless-fade-in,
+  .qless-scale-in {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
