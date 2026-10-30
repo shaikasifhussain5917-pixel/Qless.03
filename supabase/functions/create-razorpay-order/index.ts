@@ -42,6 +42,8 @@ function isOriginAllowed(origin: string): boolean {
   if (ALLOWED_ORIGINS.has(origin)) return true;
   // Allow local development on any port (e.g. 5173, 5174, 4173, 3000)
   if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  // Allow Vercel preview and production deployments
+  if (/^https:\/\/([a-z0-9-]+[.])?vercel[.]app$/.test(origin)) return true;
   return false;
 }
 
