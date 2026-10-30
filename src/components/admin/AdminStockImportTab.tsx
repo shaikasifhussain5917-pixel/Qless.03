@@ -226,11 +226,16 @@ export function AdminStockImportTab({
             qrbox: (w, h) => {
               const edge = Math.min(w, h);
               return {
-                width: Math.max(220, Math.floor(edge * 0.85)),
-                height: Math.max(140, Math.floor(edge * 0.55)),
+                width: Math.min(360, Math.max(220, Math.floor(edge * 0.85))),
+                height: Math.min(220, Math.max(140, Math.floor(edge * 0.55))),
               };
             },
             aspectRatio: 1.333333,
+            videoConstraints: {
+              facingMode: "environment",
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+            },
           },
           (decodedBarcode) => {
             if (decodedBarcode) {
@@ -854,9 +859,9 @@ export function AdminStockImportTab({
   return (
     <div className="space-y-5 qless-fade-in text-xs">
       {/* ── HEADER BANNER ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0F2044] text-lg text-white shadow-xs">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#0F2044] text-lg text-white shadow-xs">
             📥
           </span>
           <div>
@@ -864,7 +869,7 @@ export function AdminStockImportTab({
               <h2 className="font-poppins text-base font-extrabold text-[#0F2044]">
                 Smart Stock Import &amp; Receiving
               </h2>
-              <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-800">
+              <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-800">
                 Authorized Admin
               </span>
             </div>
@@ -981,7 +986,7 @@ export function AdminStockImportTab({
       )}
 
       {/* ── BARCODE SCANNER & ENTRY CONTROLS ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md space-y-4">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex-1 flex items-center gap-2">
             <div className="relative flex-1">
@@ -1051,24 +1056,56 @@ export function AdminStockImportTab({
 
         {/* Camera Viewport Container */}
         {isCameraActive && (
-          <div className="rounded-2xl border-2 border-emerald-500 bg-black/95 p-3 shadow-md qless-fade-in">
-            <div className="flex items-center justify-between text-white text-xs mb-2">
-              <span className="font-bold flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-red-500 animate-ping"></span>
-                Align barcode inside viewfinder
+          <div className="rounded-2xl border-2 border-[#2E9E44]/70 bg-black/95 p-4 shadow-md qless-fade-in space-y-3">
+            <div className="flex items-center justify-between text-white text-xs">
+              <span className="font-bold flex items-center gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Active Stock Intake Camera Scanner</span>
               </span>
               <button
                 type="button"
                 onClick={stopCamera}
-                className="rounded bg-white/20 px-2 py-0.5 text-[10px] font-bold hover:bg-white/30"
+                className="rounded-xl bg-white/15 px-3 py-1 text-xs font-semibold hover:bg-white/25 transition"
               >
                 Close Camera
               </button>
             </div>
-            <div
-              id={cameraContainerId}
-              className="w-full max-w-md mx-auto overflow-hidden rounded-xl bg-black min-h-[220px]"
-            ></div>
+            <div className="relative w-full max-w-2xl mx-auto overflow-hidden rounded-2xl bg-black min-h-[340px] sm:min-h-[420px] shadow-lg flex flex-col justify-center">
+              <div
+                id={cameraContainerId}
+                className="w-full min-h-[340px] sm:min-h-[420px]"
+              />
+
+              {/* Viewfinder corner brackets */}
+              <div
+                className="pointer-events-none absolute inset-6 sm:inset-10 qless-corner-pulse z-10 flex items-center justify-center"
+                aria-hidden="true"
+              >
+                <div className="relative w-full h-full max-w-[360px] max-h-[220px] rounded-2xl border border-white/20">
+                  <span className="absolute -left-1 -top-1 h-8 w-8 sm:h-10 sm:w-10 rounded-tl-xl border-l-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -right-1 -top-1 h-8 w-8 sm:h-10 sm:w-10 rounded-tr-xl border-r-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -left-1 h-8 w-8 sm:h-10 sm:w-10 rounded-bl-xl border-b-[3.5px] border-l-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -right-1 h-8 w-8 sm:h-10 sm:w-10 rounded-br-xl border-b-[3.5px] border-r-[3.5px] border-[#2E9E44]" />
+                </div>
+              </div>
+
+              {/* Laser beam */}
+              <div
+                className="pointer-events-none absolute left-6 right-6 h-0.5 rounded-full qless-beam z-10"
+                style={{
+                  background: "linear-gradient(90deg, transparent, #2E9E44, transparent)",
+                  boxShadow: "0 0 10px 2px rgba(46,158,68,0.5)",
+                }}
+                aria-hidden="true"
+              />
+
+              {/* Guidance pill */}
+              <div className="absolute bottom-3 inset-x-0 text-center pointer-events-none z-10 px-4">
+                <span className="inline-block rounded-xl bg-black/80 px-3 py-1 text-xs font-semibold text-white border border-white/10 shadow-sm">
+                  Align product barcode inside viewfinder
+                </span>
+              </div>
+            </div>
             {cameraError && (
               <p className="mt-2 text-center text-xs font-semibold text-red-400">
                 Camera Error: {cameraError}
@@ -1821,7 +1858,7 @@ export function AdminStockImportTab({
       )}
 
       {/* ── BATCH RECEIVING LIST TABLE ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md space-y-4">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs space-y-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-black/5 pb-3">
           <div className="flex items-center gap-2">
             <span className="text-base">📋</span>

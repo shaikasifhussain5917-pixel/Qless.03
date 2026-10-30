@@ -143,11 +143,11 @@ export function WelcomeScreen() {
           </button>
 
           <button
-            onClick={() => navigate("/auth/role")}
+            onClick={() => navigate("/auth/login")}
             className="flex min-h-[44px] h-11 w-full items-center justify-center gap-2 rounded-2xl border border-black/10 bg-white/80 font-poppins text-xs font-semibold text-[#0F2044] hover:bg-white shadow-2xs transition active:scale-[0.98]"
           >
             <span>🔑</span>
-            <span>Switch Role / Sign In (Customer · Admin · Guard)</span>
+            <span>Sign In to Account</span>
           </button>
 
           <p className="mt-1 text-center font-alegreya text-xs text-[#7A8493]">

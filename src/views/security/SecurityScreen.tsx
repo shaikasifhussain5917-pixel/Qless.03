@@ -248,68 +248,72 @@ export function SecurityScreen() {
           </div>
         </div>
 
-        {/* Dashboard Title & Store Header Card */}
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md">
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">🛡️</span>
-                <div>
-                  <h1 className="font-poppins text-lg sm:text-xl font-extrabold text-[#0F2044] tracking-tight">
-                    Security Guard Verification Portal
-                  </h1>
-                  <p className="text-xs text-[#7A8493]">
-                    Self-Checkout Automated Turnstile Gate &amp; Customer Exit Pass Inspector
-                  </p>
-                </div>
+        {/* Simplified Security Guard Header & Status Panel */}
+        <div className="rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#0F2044] text-white shadow-xs">
+                🛡️
+              </div>
+              <div>
+                <h1 className="font-poppins text-lg sm:text-xl font-extrabold text-[#0F2044] tracking-tight">
+                  Security Guard Station
+                </h1>
+                <p className="text-xs text-[#7A8493]">
+                  {selectedStore?.name || "QLess Mart"} · {selectedStore?.branch || "Indiranagar Flagship"}
+                </p>
               </div>
             </div>
 
-            <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1">
-              <span className="font-poppins text-xs font-bold text-[#0F2044]">
-                {selectedStore?.name || "QLess Mart"}
-              </span>
-              <span className="text-[10px] text-[#7A8493]">{selectedStore?.branch || "Indiranagar Flagship"}</span>
+            {/* Camera Status Badge */}
+            <div
+              className={`inline-flex items-center gap-2 self-start sm:self-auto rounded-full border px-3.5 py-1.5 text-xs font-bold ${scanStatusInfo.badgeBg}`}
+            >
+              <span
+                className={`h-2.5 w-2.5 rounded-full ${scanStatusInfo.colorClass} ${
+                  scanStatusInfo.pulse ? "animate-pulse" : ""
+                }`}
+              />
+              <span>{scanStatusInfo.label}</span>
             </div>
           </div>
 
-          {/* Scanner Status Indicator & Shift Stats */}
-          <div className="mt-4 pt-3 border-t border-black/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            {/* Real-time Status Indicator */}
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-[#7A8493] uppercase tracking-wider">
-                Status:
+          {/* Essential Status Metrics */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-black/5 text-xs">
+            <div className="rounded-xl bg-[#F9FAFB] p-2.5 border border-black/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block">
+                Camera Status
               </span>
-              <div
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${scanStatusInfo.badgeBg}`}
-              >
-                <span
-                  className={`h-2.5 w-2.5 rounded-full ${scanStatusInfo.colorClass} ${
-                    scanStatusInfo.pulse ? "animate-pulse" : ""
-                  }`}
-                />
-                <span>{scanStatusInfo.label}</span>
-              </div>
+              <span className="font-poppins font-bold text-[#0F2044] text-xs">
+                {isCameraScanning ? "Live Active" : "Ready / Idle"}
+              </span>
             </div>
 
-            {/* Quick Metrics */}
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-[#8A94A3]">Shift Cleared: </span>
-                <span className="font-poppins font-bold text-[#2E9E44]">{verifiedCount} passes</span>
-              </div>
-              <span className="text-black/20 hidden sm:inline">|</span>
-              <div>
-                <span className="text-[10px] font-bold uppercase text-[#8A94A3]">Session Scans: </span>
-                <span className="font-poppins font-bold text-[#0F2044]">{logEntries.length} total</span>
-              </div>
-              <span className="text-black/20 hidden sm:inline">|</span>
-              <div>
-                <span className="text-[10px] font-bold uppercase text-[#8A94A3]">Mode: </span>
-                <span className="font-poppins font-bold text-blue-700">
-                  {isSupabaseConfigured ? "Live Turnstile" : "Demo Check"}
-                </span>
-              </div>
+            <div className="rounded-xl bg-[#F9FAFB] p-2.5 border border-black/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block">
+                Shift-Cleared
+              </span>
+              <span className="font-poppins font-bold text-[#2E9E44] text-xs">
+                {verifiedCount} Passes
+              </span>
+            </div>
+
+            <div className="rounded-xl bg-[#F9FAFB] p-2.5 border border-black/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block">
+                Session Scans
+              </span>
+              <span className="font-poppins font-bold text-[#0F2044] text-xs">
+                {logEntries.length} Total
+              </span>
+            </div>
+
+            <div className="rounded-xl bg-[#F9FAFB] p-2.5 border border-black/5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block">
+                Scanning Mode
+              </span>
+              <span className="font-poppins font-bold text-blue-700 text-xs">
+                {isSupabaseConfigured ? "Live Turnstile" : "Demo Check"}
+              </span>
             </div>
           </div>
         </div>
@@ -351,7 +355,7 @@ export function SecurityScreen() {
                   setActiveTab("camera");
                   setIsCameraScanning(true);
                 }}
-                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1 sm:gap-1.5 rounded-xl py-2 px-1 font-poppins text-[10.5px] sm:text-xs font-bold transition active:scale-95 ${
+                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl py-2 px-2 font-poppins text-xs font-bold transition active:scale-95 ${
                   activeTab === "camera"
                     ? "bg-[#0F2044] text-white shadow-xs"
                     : "text-[#7A8493] hover:text-[#0F2044]"
@@ -367,14 +371,14 @@ export function SecurityScreen() {
                   setActiveTab("manual");
                   setIsCameraScanning(false);
                 }}
-                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1 sm:gap-1.5 rounded-xl py-2 px-1 font-poppins text-[10.5px] sm:text-xs font-bold transition active:scale-95 ${
+                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl py-2 px-2 font-poppins text-xs font-bold transition active:scale-95 ${
                   activeTab === "manual"
                     ? "bg-[#0F2044] text-white shadow-xs"
                     : "text-[#7A8493] hover:text-[#0F2044]"
                 }`}
               >
                 <span>⌨️</span>
-                <span>Manual</span>
+                <span>Manual Verification</span>
               </button>
 
               <button
@@ -383,7 +387,7 @@ export function SecurityScreen() {
                   setActiveTab("log");
                   setIsCameraScanning(false);
                 }}
-                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1 sm:gap-1.5 rounded-xl py-2 px-1 font-poppins text-[10.5px] sm:text-xs font-bold transition active:scale-95 ${
+                className={`flex-1 flex min-h-[44px] items-center justify-center gap-1.5 rounded-xl py-2 px-2 font-poppins text-xs font-bold transition active:scale-95 ${
                   activeTab === "log"
                     ? "bg-[#0F2044] text-white shadow-xs"
                     : "text-[#7A8493] hover:text-[#0F2044]"
@@ -401,17 +405,17 @@ export function SecurityScreen() {
 
             {/* TAB 1: Camera QR Scanner */}
             {activeTab === "camera" && (
-              <div className="rounded-2xl border border-white/60 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md">
-                <div className="mb-3 flex items-center justify-between border-b border-black/5 pb-2">
+              <div className="rounded-3xl border border-white/60 bg-white/95 p-4 sm:p-6 shadow-sm backdrop-blur-md">
+                <div className="mb-4 flex items-center justify-between border-b border-black/5 pb-3">
                   <div>
-                    <h3 className="font-poppins text-xs font-bold text-[#0F2044]">
-                      Live Turnstile Gate Scanner
+                    <h3 className="font-poppins text-sm font-bold text-[#0F2044]">
+                      Turnstile Exit Scanner
                     </h3>
-                    <p className="text-[10px] text-[#7A8493]">
+                    <p className="text-xs text-[#7A8493]">
                       Scan customer exit QR passes generated at self-checkout
                     </p>
                   </div>
-                  <span className="rounded-full bg-[#EEF8F0] px-2.5 py-0.5 text-[10px] font-bold text-[#2E9E44]">
+                  <span className="rounded-full bg-[#EEF8F0] px-3 py-1 text-[10px] font-bold text-[#2E9E44]">
                     EXIT PASS QR ONLY
                   </span>
                 </div>

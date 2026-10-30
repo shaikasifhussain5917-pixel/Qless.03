@@ -147,43 +147,109 @@
   animation: qlessBarFlicker 1.8s ease-in-out infinite;
 }
 
-/* html5-qrcode container rules for barcode, store entrance, and guard scanners */
-#qless-html5-camera-view,
+/* ── STANDARDIZED QLESS CAMERA VIEWPORT ARCHITECTURE ── */
+/* Applied consistently across Store Entrance QR, Customer Barcode, Security Exit QR, and Admin Intake */
 #qless-store-entrance-scanner,
+#qless-entrance-qr-scanner,
+#qless-html5-camera-view,
+#admin-stock-import-scanner,
+#qless-stock-import-camera-viewport,
 #qless-guard-camera-viewport {
   width: 100% !important;
   max-width: 100% !important;
   border: none !important;
   position: relative;
   overflow: hidden;
+  min-height: 340px;
+  border-radius: 1.25rem;
+  background-color: #020617;
 }
 
-#qless-html5-camera-view video,
+@media (min-width: 640px) {
+  #qless-store-entrance-scanner,
+  #qless-entrance-qr-scanner,
+  #qless-html5-camera-view,
+  #admin-stock-import-scanner,
+  #qless-stock-import-camera-viewport,
+  #qless-guard-camera-viewport {
+    min-height: 420px;
+  }
+}
+
+@media (min-width: 768px) {
+  #qless-store-entrance-scanner,
+  #qless-entrance-qr-scanner,
+  #qless-html5-camera-view,
+  #admin-stock-import-scanner,
+  #qless-stock-import-camera-viewport,
+  #qless-guard-camera-viewport {
+    min-height: 480px;
+  }
+}
+
 #qless-store-entrance-scanner video,
+#qless-entrance-qr-scanner video,
+#qless-html5-camera-view video,
+#admin-stock-import-scanner video,
+#qless-stock-import-camera-viewport video,
 #qless-guard-camera-viewport video {
   width: 100% !important;
   max-width: 100% !important;
-  height: 220px !important;
+  height: 340px !important;
+  min-height: 340px !important;
   object-fit: cover !important;
-  border-radius: 1rem;
+  border-radius: 1.25rem;
 }
 
-#qless-html5-camera-view img,
+@media (min-width: 640px) {
+  #qless-store-entrance-scanner video,
+  #qless-entrance-qr-scanner video,
+  #qless-html5-camera-view video,
+  #admin-stock-import-scanner video,
+  #qless-stock-import-camera-viewport video,
+  #qless-guard-camera-viewport video {
+    height: 420px !important;
+    min-height: 420px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  #qless-store-entrance-scanner video,
+  #qless-entrance-qr-scanner video,
+  #qless-html5-camera-view video,
+  #admin-stock-import-scanner video,
+  #qless-stock-import-camera-viewport video,
+  #qless-guard-camera-viewport video {
+    height: 480px !important;
+    min-height: 480px !important;
+  }
+}
+
 #qless-store-entrance-scanner img,
+#qless-entrance-qr-scanner img,
+#qless-html5-camera-view img,
+#admin-stock-import-scanner img,
+#qless-stock-import-camera-viewport img,
 #qless-guard-camera-viewport img {
   display: none !important;
 }
 
-#qless-html5-camera-view > div:first-child,
 #qless-store-entrance-scanner > div:first-child,
+#qless-entrance-qr-scanner > div:first-child,
+#qless-html5-camera-view > div:first-child,
+#admin-stock-import-scanner > div:first-child,
+#qless-stock-import-camera-viewport > div:first-child,
 #qless-guard-camera-viewport > div:first-child {
   border: none !important;
 }
 
-#qless-html5-camera-view #qr-shaded-region,
 #qless-store-entrance-scanner #qr-shaded-region,
+#qless-entrance-qr-scanner #qr-shaded-region,
+#qless-html5-camera-view #qr-shaded-region,
+#admin-stock-import-scanner #qr-shaded-region,
+#qless-stock-import-camera-viewport #qr-shaded-region,
 #qless-guard-camera-viewport #qr-shaded-region {
-  border-radius: 1rem;
+  border-radius: 1.25rem;
 }
 
 /* Safe area padding utilities for mobile devices */

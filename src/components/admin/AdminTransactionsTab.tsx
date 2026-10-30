@@ -7,10 +7,14 @@ import { LAUNCH_STORE_ID } from "../../config/storeConfig";
 interface AdminTransactionsTabProps {
   storeId?: string;
   orderHistory?: CompletedOrder[];
+  initialStatusFilter?: string;
+  onReturnToDashboard?: () => void;
 }
 
 export function AdminTransactionsTab({
   storeId = LAUNCH_STORE_ID,
+  initialStatusFilter = "all",
+  onReturnToDashboard,
 }: AdminTransactionsTabProps) {
   const [orders, setOrders] = useState<CompletedOrder[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -19,7 +23,15 @@ export function AdminTransactionsTab({
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<string>(initialStatusFilter);
   const [inspectingOrder, setInspectingOrder] = useState<CompletedOrder | null>(null);
+
+  // Synchronize status filter when navigated from Dashboard KPI card
+  useEffect(() => {
+    if (initialStatusFilter) {
+      setStatusFilter(initialStatusFilter);
+    }
+  }, [initialStatusFilter]);
 
   const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -92,10 +104,25 @@ export function AdminTransactionsTab({
     );
   }, [methodStats]);
 
+  // Confirmed and pending counts
+  const confirmedOrdersCount = useMemo(() => {
+    return orders.filter((o) => (o.paymentStatus || "").toUpperCase() === "CONFIRMED").length;
+  }, [orders]);
+
+  const pendingOrdersCount = useMemo(() => {
+    return orders.filter((o) => (o.paymentStatus || "PENDING").toUpperCase() === "PENDING").length;
+  }, [orders]);
+
   // Filtered orders
   const filteredOrders = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return orders.filter((order) => {
+      // Payment status filter
+      if (statusFilter !== "all") {
+        const orderStatus = (order.paymentStatus || "PENDING").toUpperCase();
+        if (orderStatus !== statusFilter.toUpperCase()) return false;
+      }
+
       // Payment method filter
       if (selectedMethod !== "all") {
         const orderMethod = (order.paymentMethod || "").toLowerCase().trim();
@@ -112,7 +139,7 @@ export function AdminTransactionsTab({
         (order.store?.name && order.store.name.toLowerCase().includes(q))
       );
     });
-  }, [orders, searchQuery, selectedMethod]);
+  }, [orders, searchQuery, selectedMethod, statusFilter]);
 
   // Filtered volume metrics
   const filteredRevenue = useMemo(() => {
@@ -120,64 +147,65 @@ export function AdminTransactionsTab({
   }, [filteredOrders]);
 
   // Active filter state detection and reset action
-  const hasActiveFilters = selectedMethod !== "all" || searchQuery.trim() !== "";
+  const hasActiveFilters = selectedMethod !== "all" || statusFilter !== "all" || searchQuery.trim() !== "";
 
   const handleResetFilters = () => {
     setSearchQuery("");
     setSelectedMethod("all");
+    setStatusFilter("all");
   };
 
   return (
     <div className="space-y-4 qless-fade-in text-xs">
       {/* ── TRANSACTION KPI CARDS ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block mb-1">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block mb-1">
             Total Sales Volume
           </span>
-          <p className="font-poppins text-xl font-extrabold text-[#2E9E44]">
+          <p className="font-poppins text-2xl font-extrabold text-[#2E9E44]">
             {fmt(totalRevenue)}
           </p>
-          <p className="text-[10px] text-[#7A8493] mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             Across {orders.length} verified checkout sessions
           </p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block mb-1">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
             Average Order Value
           </span>
-          <p className="font-poppins text-xl font-extrabold text-[#0F2044]">
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {fmt(averageTicket)}
           </p>
-          <p className="text-[10px] text-[#7A8493] mt-0.5">Per self-checkout trip</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Per self-checkout trip</p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block mb-1">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
             Merchandise Units Sold
           </span>
-          <p className="font-poppins text-xl font-extrabold text-[#0F2044]">
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {totalItemsSold}
           </p>
-          <p className="text-[10px] text-[#7A8493] mt-0.5">Scanned through cart bay</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Scanned through cart bay</p>
         </div>
 
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block mb-1">
+        <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
             Payment Mix (UPI / Card / Wallet / Cash)
           </span>
           <p className="font-poppins text-xs sm:text-sm font-bold text-[#0F2044] leading-snug">
             {methodStats.upi.count} UPI · {methodStats.card.count} Card · {methodStats.wallet.count} Wallet · {methodStats.cash.count} Cash
           </p>
-          <p className="text-[10px] text-[#7A8493] mt-0.5">
+          <p className="text-[11px] text-slate-500 mt-0.5">
             {fmt(methodStats.cash.total)} in cash · {fmt(reconciledRevenue - methodStats.cash.total)} cashless
           </p>
         </div>
       </div>
 
       {/* ── SEARCH & FILTERS BAR ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md space-y-3">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -231,7 +259,7 @@ export function AdminTransactionsTab({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
           <div className="relative">
             <input
               type="text"
@@ -244,7 +272,7 @@ export function AdminTransactionsTab({
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#7A8493] hover:text-[#0F2044] p-1"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-[#7A8493] hover:text-[#0F2044] p-1 cursor-pointer"
                 aria-label="Clear search query"
               >
                 ✕
@@ -265,7 +293,96 @@ export function AdminTransactionsTab({
               <option value="cash">Counter Cash Settlement ({methodStats.cash.count} · {fmt(methodStats.cash.total)})</option>
             </select>
           </div>
+
+          <div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="w-full rounded-xl border border-black/10 bg-[#F9FAFB] px-3 py-2 text-xs font-medium text-[#0F2044] focus:border-[#2E9E44] focus:bg-white focus:outline-none"
+            >
+              <option value="all">Payment Status: All Orders ({orders.length})</option>
+              <option value="CONFIRMED">CONFIRMED Only ({confirmedOrdersCount})</option>
+              <option value="PENDING">PENDING Only ({pendingOrdersCount})</option>
+            </select>
+          </div>
         </div>
+
+        {/* Quick Status Filter Tabs */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-1.5 border-t border-black/5">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] shrink-0 mr-1">
+            Status Filter:
+          </span>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("all")}
+            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition whitespace-nowrap cursor-pointer ${
+              statusFilter === "all"
+                ? "bg-[#0F2044] text-white shadow-2xs"
+                : "bg-black/5 text-[#7A8493] hover:bg-black/10 hover:text-[#0F2044]"
+            }`}
+          >
+            All Orders ({orders.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("CONFIRMED")}
+            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              statusFilter.toUpperCase() === "CONFIRMED"
+                ? "bg-[#2E9E44] text-white shadow-2xs"
+                : "bg-emerald-50 text-emerald-800 border border-emerald-200 hover:bg-emerald-100"
+            }`}
+          >
+            <span>✓ Confirmed</span>
+            <span className="rounded-full bg-emerald-200/80 px-1.5 py-0.2 text-[9px] text-emerald-950 font-bold">{confirmedOrdersCount}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setStatusFilter("PENDING")}
+            className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition whitespace-nowrap flex items-center gap-1 cursor-pointer ${
+              statusFilter.toUpperCase() === "PENDING"
+                ? "bg-amber-500 text-white shadow-2xs"
+                : "bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100"
+            }`}
+          >
+            <span>⏳ Pending</span>
+            <span className="rounded-full bg-amber-200/80 px-1.5 py-0.2 text-[9px] text-amber-950 font-bold">{pendingOrdersCount}</span>
+          </button>
+        </div>
+
+        {/* Active Pending Orders Banner */}
+        {statusFilter.toUpperCase() === "PENDING" && (
+          <div className="rounded-xl border border-amber-300 bg-amber-50/90 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-2xs">
+            <div className="flex items-center gap-2">
+              <span className="text-base">⏳</span>
+              <div>
+                <p className="font-bold text-amber-950 text-xs">
+                  Showing {filteredOrders.length} Pending Orders Awaiting Cashier Confirmation
+                </p>
+                <p className="text-[11px] text-amber-800">
+                  Customers with cash-at-counter or in-flight payments will show here until finalized. Click "View Items" to inspect order details.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={() => setStatusFilter("all")}
+                className="rounded-lg border border-amber-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-amber-900 hover:bg-amber-100 transition shadow-2xs cursor-pointer"
+              >
+                Clear Filter
+              </button>
+              {onReturnToDashboard && (
+                <button
+                  type="button"
+                  onClick={onReturnToDashboard}
+                  className="rounded-lg bg-[#0F2044] px-3 py-1 text-[11px] font-bold text-white hover:bg-[#1A3163] transition shadow-2xs cursor-pointer"
+                >
+                  ← Back to Dashboard
+                </button>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* ── PAYMENT RECONCILIATION AUDIT STRIP ── */}
         <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-black/5 bg-[#F9FAFB] p-2.5 text-[11px]">
@@ -296,7 +413,7 @@ export function AdminTransactionsTab({
       </div>
 
       {/* ── TRANSACTIONS DATA CONTAINER ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md overflow-x-auto">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs overflow-x-auto">
         {isLoading ? (
           <div className="py-16 text-center text-[#7A8493]">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#0F2044]">
@@ -364,31 +481,31 @@ export function AdminTransactionsTab({
             )}
           </div>
         ) : (
-          <table className="w-full text-left text-xs min-w-[760px]">
+          <table className="w-full text-left text-xs min-w-[940px] border-collapse">
             <thead>
-              <tr className="border-b border-black/5 text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
-                <th className="pb-2.5">Order Ref</th>
-                <th className="pb-2.5">Status</th>
-                <th className="pb-2.5">Receipt ID</th>
-                <th className="pb-2.5">Date &amp; Time</th>
-                <th className="pb-2.5">Customer Info</th>
-                <th className="pb-2.5">Items</th>
-                <th className="pb-2.5">Payment Method</th>
-                <th className="pb-2.5 text-right">Amount Paid</th>
-                <th className="pb-2.5 text-right">Action</th>
+              <tr className="border-b border-black/10 bg-[#F9FAFB] text-[10.5px] font-bold uppercase tracking-wider text-[#7A8493]">
+                <th className="py-3 px-3.5 min-w-[130px] whitespace-nowrap">Order Ref</th>
+                <th className="py-3 px-3 min-w-[110px] whitespace-nowrap">Status</th>
+                <th className="py-3 px-3 min-w-[120px] whitespace-nowrap">Receipt ID</th>
+                <th className="py-3 px-3 min-w-[130px] whitespace-nowrap">Date &amp; Time</th>
+                <th className="py-3 px-3 min-w-[140px] whitespace-nowrap">Customer Info</th>
+                <th className="py-3 px-3 min-w-[90px] whitespace-nowrap">Items</th>
+                <th className="py-3 px-3 min-w-[140px] whitespace-nowrap">Payment Method</th>
+                <th className="py-3 px-3 min-w-[100px] whitespace-nowrap text-right">Amount Paid</th>
+                <th className="py-3 px-3.5 min-w-[100px] whitespace-nowrap text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-black/5">
+            <tbody className="divide-y divide-black/5 text-[#0F2044]">
               {filteredOrders.map((order) => {
                 const isConfirmed = order.paymentStatus === "CONFIRMED";
                 const isPending = order.paymentStatus === "PENDING";
 
                 return (
                   <tr key={order.orderId} className="hover:bg-[#F9FAFB]/80 transition">
-                    <td className="py-3 font-mono font-bold text-[#0F2044]">
+                    <td className="py-3 px-3.5 align-middle font-mono font-bold text-[#0F2044] whitespace-nowrap">
                       {order.orderId}
                     </td>
-                    <td className="py-3">
+                    <td className="py-3 px-3 align-middle whitespace-nowrap">
                       <span
                         className={`inline-block rounded-full px-2 py-0.5 text-[9.5px] font-bold border ${
                           isConfirmed
@@ -401,13 +518,13 @@ export function AdminTransactionsTab({
                         {order.paymentStatus || "UNKNOWN"}
                       </span>
                     </td>
-                    <td className="py-3 font-mono text-[#7A8493]">
+                    <td className="py-3 px-3 align-middle font-mono text-[#7A8493] whitespace-nowrap">
                       {order.receiptId}
                     </td>
-                    <td className="py-3 text-[#7A8493]">
+                    <td className="py-3 px-3 align-middle text-[#7A8493] whitespace-nowrap">
                       {order.paidAt}
                     </td>
-                    <td className="py-3 text-[#0F2044]">
+                    <td className="py-3 px-3 align-middle text-[#0F2044] whitespace-nowrap">
                       {order.customerId ? (
                         <span className="font-mono text-[10px] text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200 block truncate max-w-[130px]" title={`Customer UUID: ${order.customerId}`}>
                           UUID: {order.customerId.slice(0, 8)}…
@@ -418,10 +535,10 @@ export function AdminTransactionsTab({
                         </span>
                       )}
                     </td>
-                    <td className="py-3 font-semibold text-[#0F2044]">
+                    <td className="py-3 px-3 align-middle font-semibold text-[#0F2044] whitespace-nowrap">
                       {order.itemCount} items
                     </td>
-                    <td className="py-3">
+                    <td className="py-3 px-3 align-middle whitespace-nowrap">
                       <span
                         className={`rounded-md px-2 py-0.5 text-[10px] font-semibold ${
                           order.paymentMethod === "cash"
@@ -435,14 +552,14 @@ export function AdminTransactionsTab({
                         {order.paymentReference}
                       </span>
                     </td>
-                    <td className="py-3 text-right font-bold text-[#2E9E44]">
+                    <td className="py-3 px-3 align-middle text-right font-bold text-[#2E9E44] whitespace-nowrap">
                       {fmt(order.finalTotal)}
                     </td>
-                    <td className="py-3 text-right">
+                    <td className="py-3 px-3.5 align-middle text-right whitespace-nowrap">
                       <button
                         type="button"
                         onClick={() => setInspectingOrder(order)}
-                        className="rounded-lg border border-black/10 bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0F2044] hover:bg-[#F8F9FA] shadow-2xs"
+                        className="rounded-lg border border-black/10 bg-white px-2.5 py-1 text-[11px] font-semibold text-[#0F2044] hover:bg-[#F8F9FA] shadow-2xs transition active:scale-95 cursor-pointer"
                       >
                         View Items
                       </button>

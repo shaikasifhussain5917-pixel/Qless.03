@@ -32,7 +32,7 @@ export interface Product extends Omit<CartItem, "quantity"> {
 }
 
 
-export type StockFilter = "all" | "in_stock" | "low_stock" | "out_of_stock";
+export type StockFilter = "all" | "in_stock" | "low_stock" | "out_of_stock" | "alerts";
 
 export type AdminTab = "overview" | "products" | "inventory" | "locations" | "transactions" | "security" | "gate-qr" | "stock-import";
 

@@ -96,7 +96,7 @@ export function ProductCatalogTab({ onSelectProduct, onViewLocation }: ProductCa
                         </span>
                       )}
 
-                      {!isMissing && location && (
+                      {!isMissing && location ? (
                         <button
                           type="button"
                           onClick={(e) => {
@@ -105,13 +105,17 @@ export function ProductCatalogTab({ onSelectProduct, onViewLocation }: ProductCa
                           }}
                           className={`rounded px-1.5 py-0.5 text-[9px] font-bold tracking-tight transition hover:underline ${
                             isVerified
-                              ? "bg-slate-100 text-[#0F2044]"
-                              : "bg-amber-100 text-amber-900"
+                              ? "bg-slate-100 text-[#0F2044] border border-slate-200"
+                              : "bg-amber-100 text-amber-900 border border-amber-200"
                           }`}
                           title={`Aisle ${location.aisleCode} · Rack ${location.rackCode}`}
                         >
-                          📍 {location.aisleCode} · {location.rackCode}
+                          📍 Rack {location.rackCode} ({location.aisleCode})
                         </button>
+                      ) : (
+                        <span className="rounded bg-slate-50 border border-slate-200 px-1.5 py-0.5 text-[9px] font-medium text-slate-500">
+                          📍 Main Shelf
+                        </span>
                       )}
                     </div>
                   </div>

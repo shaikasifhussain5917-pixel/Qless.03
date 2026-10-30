@@ -13,11 +13,13 @@ import {
 interface AdminLocationsTabProps {
   catalog: Product[];
   storeId?: string;
+  onReturnToDashboard?: () => void;
 }
 
 export function AdminLocationsTab({
   catalog,
   storeId = LAUNCH_STORE_ID,
+  onReturnToDashboard,
 }: AdminLocationsTabProps) {
   const { updateLocation: updateShoppingContextLocation } = useShopping();
 
@@ -311,7 +313,7 @@ export function AdminLocationsTab({
       )}
 
       {/* Top Header & Overview Counters */}
-      <div className="rounded-3xl border border-white/70 bg-white/90 p-5 shadow-sm backdrop-blur-md">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-black/5 pb-4">
           <div>
             <div className="flex items-center gap-2">
@@ -329,11 +331,20 @@ export function AdminLocationsTab({
           </div>
 
           <div className="flex items-center gap-2">
+            {onReturnToDashboard && (
+              <button
+                type="button"
+                onClick={onReturnToDashboard}
+                className="inline-flex items-center gap-1 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-[#F8F9FA] transition shadow-2xs cursor-pointer"
+              >
+                ← Back to Dashboard
+              </button>
+            )}
             <button
               type="button"
               onClick={() => loadData(true)}
               disabled={isRefreshing || isLoading || isSaving}
-              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-[#F8F9FA] transition shadow-2xs disabled:opacity-60"
+              className="inline-flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-[#F8F9FA] transition shadow-2xs disabled:opacity-60 cursor-pointer"
               title="Refresh locations directly from Supabase"
             >
               <svg
@@ -492,7 +503,7 @@ export function AdminLocationsTab({
       </div>
 
       {/* Locations Table / Responsive List */}
-      <div className="rounded-3xl border border-white/70 bg-white/95 shadow-sm backdrop-blur-md overflow-hidden">
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
         {isLoading ? (
           <div className="py-16 text-center text-[#7A8493]">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#0F2044]">
@@ -549,18 +560,18 @@ export function AdminLocationsTab({
             </button>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse text-xs">
+          <div className="overflow-x-auto w-full">
+            <table className="w-full text-left border-collapse text-xs min-w-[1020px]">
               <thead>
-                <tr className="border-b border-black/5 bg-[#F9FAFB] text-[10.5px] font-bold uppercase tracking-wider text-[#7A8493]">
-                  <th className="py-3 px-4">Product</th>
-                  <th className="py-3 px-3">Barcode</th>
-                  <th className="py-3 px-3">Category</th>
-                  <th className="py-3 px-3">Aisle</th>
-                  <th className="py-3 px-3">Rack &amp; Shelf</th>
-                  <th className="py-3 px-3">Verification</th>
-                  <th className="py-3 px-3">Last Updated</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                <tr className="border-b border-black/10 bg-[#F9FAFB] text-[10.5px] font-bold uppercase tracking-wider text-[#7A8493]">
+                  <th className="py-3 px-4 min-w-[200px] whitespace-nowrap">Product</th>
+                  <th className="py-3 px-3 min-w-[120px] whitespace-nowrap">Barcode</th>
+                  <th className="py-3 px-3 min-w-[120px] whitespace-nowrap">Category</th>
+                  <th className="py-3 px-3 min-w-[130px] whitespace-nowrap">Aisle</th>
+                  <th className="py-3 px-3 min-w-[140px] whitespace-nowrap">Rack &amp; Shelf</th>
+                  <th className="py-3 px-3 min-w-[120px] whitespace-nowrap">Verification</th>
+                  <th className="py-3 px-3 min-w-[110px] whitespace-nowrap">Last Updated</th>
+                  <th className="py-3 px-4 min-w-[170px] whitespace-nowrap text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/5 text-[#0F2044]">
@@ -583,7 +594,7 @@ export function AdminLocationsTab({
                       className="hover:bg-[#F8F9FA]/80 transition group"
                     >
                       {/* Product Name & Emoji */}
-                      <td className="py-3 px-4 font-semibold">
+                      <td className="py-3 px-4 align-middle font-semibold">
                         <div className="flex items-center gap-2.5">
                           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-base">
                             {product.emoji || "🛍️"}
@@ -598,19 +609,19 @@ export function AdminLocationsTab({
                       </td>
 
                       {/* Barcode */}
-                      <td className="py-3 px-3 font-mono text-[11px] text-slate-600">
+                      <td className="py-3 px-3 align-middle font-mono text-[11px] text-slate-600 whitespace-nowrap">
                         {product.barcode}
                       </td>
 
                       {/* Category */}
-                      <td className="py-3 px-3 text-slate-600">
+                      <td className="py-3 px-3 align-middle text-slate-600 whitespace-nowrap">
                         <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-700">
                           {product.category}
                         </span>
                       </td>
 
                       {/* Aisle */}
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 align-middle whitespace-nowrap">
                         {location ? (
                           <div>
                             <span className="font-poppins font-bold text-[#0F2044]">
@@ -626,7 +637,7 @@ export function AdminLocationsTab({
                       </td>
 
                       {/* Rack & Shelf */}
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 align-middle whitespace-nowrap">
                         {location ? (
                           <div className="flex items-center gap-1.5">
                             <span className="rounded-md bg-blue-50 border border-blue-200 px-1.5 py-0.5 font-mono text-[10px] font-bold text-blue-800">
@@ -642,7 +653,7 @@ export function AdminLocationsTab({
                       </td>
 
                       {/* Verification Status Pill */}
-                      <td className="py-3 px-3">
+                      <td className="py-3 px-3 align-middle whitespace-nowrap">
                         <span
                           className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${
                             isVerified
@@ -666,16 +677,16 @@ export function AdminLocationsTab({
                       </td>
 
                       {/* Last Updated */}
-                      <td className="py-3 px-3 text-[10px] text-[#7A8493]">
+                      <td className="py-3 px-3 align-middle text-[10px] text-[#7A8493] whitespace-nowrap">
                         {formattedDate}
                       </td>
 
                       {/* Action Button */}
-                      <td className="py-3 px-4 text-right">
+                      <td className="py-3 px-4 align-middle text-right whitespace-nowrap min-w-[170px]">
                         <button
                           type="button"
                           onClick={() => handleOpenEdit(product, location)}
-                          className="rounded-xl border border-black/10 bg-white px-3 py-1.5 font-poppins text-xs font-semibold text-[#0F2044] hover:bg-[#2E9E44] hover:text-white hover:border-[#2E9E44] shadow-2xs transition active:scale-95"
+                          className="rounded-xl border border-black/10 bg-white px-3.5 py-1.5 font-poppins text-xs font-semibold text-[#0F2044] hover:bg-[#2E9E44] hover:text-white hover:border-[#2E9E44] shadow-2xs transition active:scale-95 whitespace-nowrap cursor-pointer"
                         >
                           {location ? "Edit Location" : "Assign Coordinates"}
                         </button>

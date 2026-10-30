@@ -1,8 +1,6 @@
 import { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useShopping } from "../../context/ShoppingContext";
-import { CustomerLayout } from "../../layouts/CustomerLayout";
-import { AdminTab, Product } from "../../types";
+import { AdminTab, Product, StockFilter } from "../../types";
 import {
   addProduct,
   deleteProduct,
@@ -13,6 +11,7 @@ import {
   clearVerificationLogs,
   getVerificationLogs,
 } from "../../utils/securityStorage";
+import { AdminTopNav } from "../../components/admin/AdminTopNav";
 import { AdminSidebar } from "../../components/admin/AdminSidebar";
 import { AdminOverviewTab } from "../../components/admin/AdminOverviewTab";
 import { AdminProductsTab } from "../../components/admin/AdminProductsTab";
@@ -24,11 +23,33 @@ import { AdminGateQRTab } from "../../components/admin/AdminGateQRTab";
 import { AdminStockImportTab } from "../../components/admin/AdminStockImportTab";
 
 export function AdminScreen() {
-  const navigate = useNavigate();
   const { selectedStore, orderHistory } = useShopping();
 
   // Active navigation tab
   const [currentTab, setCurrentTab] = useState<AdminTab>("overview");
+
+  // Filter persistence across tab transitions
+  const [inventoryFilter, setInventoryFilter] = useState<StockFilter>("all");
+  const [transactionStatusFilter, setTransactionStatusFilter] = useState<string>("all");
+
+  const handleNavigateTab = (
+    tab: AdminTab,
+    options?: { stockFilter?: StockFilter; orderStatusFilter?: string }
+  ) => {
+    if (options?.stockFilter) {
+      setInventoryFilter(options.stockFilter);
+    } else if (tab === "inventory") {
+      setInventoryFilter("all");
+    }
+
+    if (options?.orderStatusFilter) {
+      setTransactionStatusFilter(options.orderStatusFilter);
+    } else if (tab === "transactions") {
+      setTransactionStatusFilter("all");
+    }
+
+    setCurrentTab(tab);
+  };
 
   // Persistent product catalog state
   const [catalog, setCatalog] = useState<Product[]>(() => getProductCatalog());
@@ -38,6 +59,9 @@ export function AdminScreen() {
 
   // Add Product modal state
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  // Mobile drawer state
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
 
 
@@ -83,52 +107,53 @@ export function AdminScreen() {
     return verificationLogs.filter((v) => v.hasDiscrepancy).length;
   }, [verificationLogs]);
 
+  // Pending orders count from active state for badge
+  const pendingOrdersCount = useMemo(() => {
+    return orderHistory.filter((o) => (o.paymentStatus || "PENDING").toUpperCase() === "PENDING").length;
+  }, [orderHistory]);
+
   return (
-    <CustomerLayout
-      showHeader={true}
-      showFooter={true}
-      maxWidthClass="max-w-[1140px]"
-      onBack={() => navigate("/auth/role")}
-      backLabel="Exit Admin Portal"
-    >
-      <div className="flex flex-1 flex-col qless-fade-in pb-12 w-full space-y-4">
-        {/* Top Header Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-black/5 pb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#0F2044] text-white text-xs font-bold">
-                Q
-              </span>
-              <h1 className="font-poppins text-lg sm:text-xl font-extrabold tracking-tight text-[#0F2044]">
-                Supermarket Admin Portal
-              </h1>
-            </div>
-            <p className="text-xs text-[#7A8493] mt-0.5">
-              Enterprise management dashboard for {selectedStore?.name || "Store"} ({selectedStore?.branch || "Indiranagar"})
-            </p>
-          </div>
+    <div className="h-screen w-screen overflow-hidden bg-slate-50/70 text-[#0F2044] antialiased flex flex-col lg:flex-row">
+      {/* Left Column: Fixed Sidebar on Desktop & Mobile Drawer */}
+      <AdminSidebar
+        currentTab={currentTab}
+        onSelectTab={(tab) => {
+          handleNavigateTab(tab);
+          setIsMobileSidebarOpen(false);
+        }}
+        selectedStore={selectedStore}
+        lowStockCount={lowStockCount}
+        totalOrdersCount={orderHistory.length}
+        unresolvedDiscrepanciesCount={unresolvedDiscrepanciesCount}
+        isMobileOpen={isMobileSidebarOpen}
+        onCloseMobile={() => setIsMobileSidebarOpen(false)}
+      />
 
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-bold text-[#2E9E44]">
-              ● POS ONLINE (DEMO)
-            </span>
-          </div>
-        </div>
-
-        {/* Main Dashboard Layout: Sidebar + Active Module Tab */}
-        <div className="flex flex-col lg:flex-row items-start gap-4 w-full">
-          {/* Responsive Sidebar */}
-          <AdminSidebar
+      {/* Right Column: TopNav + Independent Scrollable Content */}
+      <div className="flex-1 flex flex-col h-screen min-w-0 overflow-hidden">
+        <div className="p-3 sm:p-5 pb-0 shrink-0 relative z-30">
+          <AdminTopNav
             currentTab={currentTab}
-            onSelectTab={setCurrentTab}
             selectedStore={selectedStore}
             lowStockCount={lowStockCount}
-            totalOrdersCount={orderHistory.length}
-            unresolvedDiscrepanciesCount={unresolvedDiscrepanciesCount}
+            pendingOrdersCount={pendingOrdersCount}
+            onRefresh={() => {
+              setCatalog(getProductCatalog());
+              setVerificationLogs(getVerificationLogs());
+            }}
+            onSearch={(query) => {
+              if (query.trim() && currentTab !== "products") {
+                setCurrentTab("products");
+              }
+            }}
+            onNavigateTab={(tab) => handleNavigateTab(tab)}
+            onOpenMobileMenu={() => setIsMobileSidebarOpen(true)}
           />
+        </div>
 
-          {/* Active Module Content Area */}
-          <main className="flex-1 w-full min-w-0">
+        {/* Scrollable Content Workspace */}
+        <main className="flex-1 overflow-y-auto p-3 sm:p-5 pt-3 w-full">
+          <div className="max-w-[1400px] mx-auto pb-12">
             {currentTab === "overview" && (
               <AdminOverviewTab
                 storeId={selectedStore?.id || "STORE001"}
@@ -136,7 +161,7 @@ export function AdminScreen() {
                 orderHistory={orderHistory}
                 verificationLogs={verificationLogs}
                 selectedStore={selectedStore}
-                onNavigateTab={(tab) => setCurrentTab(tab)}
+                onNavigateTab={handleNavigateTab}
                 onOpenAddProductModal={() => {
                   setCurrentTab("products");
                   setIsAddModalOpen(true);
@@ -160,6 +185,8 @@ export function AdminScreen() {
             {currentTab === "inventory" && (
               <AdminInventoryTab
                 storeId={selectedStore?.id || "STORE001"}
+                initialStockFilter={inventoryFilter}
+                onReturnToDashboard={() => setCurrentTab("overview")}
               />
             )}
 
@@ -167,6 +194,7 @@ export function AdminScreen() {
               <AdminLocationsTab
                 catalog={catalog}
                 storeId={selectedStore?.id || "STORE001"}
+                onReturnToDashboard={() => setCurrentTab("overview")}
               />
             )}
 
@@ -174,6 +202,8 @@ export function AdminScreen() {
               <AdminTransactionsTab
                 storeId={selectedStore?.id || "STORE001"}
                 orderHistory={orderHistory}
+                initialStatusFilter={transactionStatusFilter}
+                onReturnToDashboard={() => setCurrentTab("overview")}
               />
             )}
 
@@ -199,9 +229,9 @@ export function AdminScreen() {
                 branchName={selectedStore?.branch || "HSR Layout Flagship"}
               />
             )}
-          </main>
-        </div>
+          </div>
+        </main>
       </div>
-    </CustomerLayout>
+    </div>
   );
 }

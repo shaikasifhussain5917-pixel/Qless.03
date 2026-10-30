@@ -47,7 +47,7 @@ export function CustomerLayout({
       <div className={`relative z-[1] mx-auto flex min-h-[calc(100vh-2rem)] sm:min-h-[calc(100vh-2.5rem)] w-full ${maxWidthClass} flex-col ${showCustomerNav ? "pb-20 sm:pb-0" : ""}`}>
         {/* Navigation & Brand Header */}
         {showHeader && (
-          <header className="no-print flex items-center justify-between pb-3 pt-1 border-b border-black/5 mb-3 gap-2">
+          <header className="no-print relative z-30 flex items-center justify-between pb-3 pt-1 border-b border-black/5 mb-3 gap-2">
             <div className="flex items-center gap-2 sm:gap-3 min-w-0">
               {onBack && (
                 <button
@@ -115,11 +115,11 @@ export function CustomerLayout({
                         className="fixed inset-0 z-40"
                         onClick={() => setIsUserMenuOpen(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 w-52 rounded-2xl border border-black/10 bg-white p-2 shadow-xl z-50 animate-in fade-in zoom-in-95 duration-100 text-xs">
-                        <div className="px-3 py-2 border-b border-black/5 mb-1">
+                      <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2.5 shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-100 text-xs">
+                        <div className="px-3 py-2 border-b border-black/5 mb-1.5">
                           <p className="font-bold text-[#0F2044] truncate">{user.name}</p>
                           <p className="text-[10px] text-[#7A8493] truncate">{user.email}</p>
-                          <span className="mt-1 inline-block rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold px-1.5 py-0.2">
+                          <span className="mt-1 inline-block rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 border border-emerald-200/60">
                             {user.role} · Verified
                           </span>
                         </div>
@@ -131,7 +131,7 @@ export function CustomerLayout({
                               setIsUserMenuOpen(false);
                               navigate("/profile");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
                           >
                             <span>👤</span>
                             <span>My Profile</span>
@@ -143,7 +143,7 @@ export function CustomerLayout({
                               setIsUserMenuOpen(false);
                               navigate("/settings");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
                           >
                             <span>⚙️</span>
                             <span>Account Settings</span>
@@ -155,12 +155,13 @@ export function CustomerLayout({
                               setIsUserMenuOpen(false);
                               navigate("/history");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
                           >
                             <span>🕒</span>
                             <span>Order History</span>
                           </button>
 
+                          {/* Authorized staff portal access (strictly matching role, never non-authenticated roles) */}
                           {(user.role === "ADMIN" || user.role === "STORE_ADMIN") && (
                             <button
                               type="button"
@@ -168,7 +169,7 @@ export function CustomerLayout({
                                 setIsUserMenuOpen(false);
                                 navigate("/admin");
                               }}
-                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 transition"
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 transition cursor-pointer"
                             >
                               <span>🛡️</span>
                               <span>Admin Dashboard</span>
@@ -182,39 +183,29 @@ export function CustomerLayout({
                                 setIsUserMenuOpen(false);
                                 navigate("/security");
                               }}
-                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-amber-800 bg-amber-50/70 hover:bg-amber-100 transition"
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-amber-800 bg-amber-50/70 hover:bg-amber-100 transition cursor-pointer"
                             >
                               <span>👮</span>
                               <span>Security Terminal</span>
                             </button>
                           )}
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsUserMenuOpen(false);
-                              navigate("/cashier");
-                            }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition"
-                          >
-                            <span>🧑‍💼</span>
-                            <span>Cashier Desk</span>
-                          </button>
-
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsUserMenuOpen(false);
-                              navigate("/auth/role");
-                            }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition"
-                          >
-                            <span>🔄</span>
-                            <span>Switch Portal</span>
-                          </button>
+                          {user.role === "CASHIER" && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsUserMenuOpen(false);
+                                navigate("/cashier");
+                              }}
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 transition cursor-pointer"
+                            >
+                              <span>🧑‍💼</span>
+                              <span>Cashier Desk</span>
+                            </button>
+                          )}
                         </div>
 
-                        <div className="border-t border-black/5 mt-1 pt-1">
+                        <div className="border-t border-black/5 mt-1.5 pt-1.5">
                           <button
                             type="button"
                             onClick={() => {
@@ -222,7 +213,7 @@ export function CustomerLayout({
                               logout();
                               navigate("/auth/login");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-red-600 hover:bg-red-50 transition"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-red-600 hover:bg-red-50 transition cursor-pointer"
                           >
                             <span>🚪</span>
                             <span>Sign Out</span>
@@ -235,8 +226,8 @@ export function CustomerLayout({
               ) : (
                 <button
                   type="button"
-                  onClick={() => navigate("/auth/role")}
-                  className="rounded-full border border-black/10 bg-[#0F2044] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-slate-800 transition active:scale-95"
+                  onClick={() => navigate("/auth/login")}
+                  className="rounded-full border border-black/10 bg-[#0F2044] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-slate-800 transition active:scale-95 cursor-pointer"
                 >
                   Sign In
                 </button>

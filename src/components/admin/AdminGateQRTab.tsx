@@ -208,18 +208,18 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
   return (
     <div className="space-y-4">
       {/* ── HEADER / TOP STORE STATUS CARD ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md no-print">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs no-print">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#2E9E44] text-white font-bold text-sm shadow-xs">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white font-bold text-sm shadow-xs">
                 🚪
               </span>
               <div>
                 <h2 className="font-poppins text-base sm:text-lg font-extrabold text-[#0F2044] leading-tight">
                   Store Entrance Gate QR Pass
                 </h2>
-                <p className="text-xs text-[#7A8493]">
+                <p className="text-xs text-slate-500">
                   Turnstile signage and kiosk QR generation for {store.name} ({store.code} · {store.branch})
                 </p>
               </div>
@@ -231,11 +231,11 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
             <div
               className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold border ${
                 store.is_active
-                  ? "bg-emerald-50 text-[#2E9E44] border-emerald-200"
-                  : "bg-red-50 text-red-600 border-red-200"
+                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border-rose-200"
               }`}
             >
-              <span className={`h-2 w-2 rounded-full ${store.is_active ? "bg-[#2E9E44] animate-pulse" : "bg-red-500"}`} />
+              <span className={`h-2 w-2 rounded-full ${store.is_active ? "bg-emerald-500 animate-pulse" : "bg-rose-500"}`} />
               <span>{store.is_active ? "STORE ACTIVE (ENTRANCE OPEN)" : "STORE PAUSED (ENTRY SESSIONS BLOCKED)"}</span>
             </div>
 
@@ -243,7 +243,7 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
               type="button"
               onClick={() => fetchLiveStoreStatus(true)}
               disabled={isRefreshing || isLoading}
-              className="flex items-center gap-1.5 rounded-xl border border-black/10 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-[#F8F9FA] transition active:scale-95 shadow-2xs disabled:opacity-60"
+              className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-slate-50 transition shadow-2xs disabled:opacity-60"
             >
               <span className={isRefreshing || isLoading ? "animate-spin" : ""}>🔄</span>
               <span>Refresh Status</span>
@@ -269,7 +269,7 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
       {/* ── MAIN CONTENT GRID: QR DISPLAY & CONTROLS ── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 no-print">
         {/* Left Column: QR Card & Actions (7 cols) */}
-        <div className="lg:col-span-7 rounded-2xl border border-white/70 bg-white/95 p-5 shadow-sm backdrop-blur-md flex flex-col items-center text-center space-y-4">
+        <div className="lg:col-span-7 rounded-xl border border-slate-200/80 bg-white p-5 shadow-xs flex flex-col items-center text-center space-y-4">
           <div className="w-full flex items-center justify-between border-b border-black/5 pb-3">
             <span className="text-xs font-bold text-[#0F2044] uppercase tracking-wider">
               Official Physical Gate Pass
@@ -390,7 +390,7 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
         {/* Right Column: Payload Inspection & Security Guarantees (5 cols) */}
         <div className="lg:col-span-5 space-y-4">
           {/* Payload Inspector */}
-          <div className="rounded-2xl border border-white/70 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md space-y-3">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-[#0F2044] uppercase tracking-wider">
                 Turnstile QR Payload
@@ -398,7 +398,7 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
               <button
                 type="button"
                 onClick={() => handleCopy(currentQrPayload, "payload")}
-                className="text-[11px] font-bold text-[#2E9E44] hover:underline"
+                className="text-[11px] font-bold text-emerald-700 hover:underline"
               >
                 {copiedField === "payload" ? "Copied! ✓" : "Copy Payload"}
               </button>
@@ -408,8 +408,8 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
               {currentQrPayload}
             </pre>
 
-            <div className="flex items-center justify-between text-xs border-t border-black/5 pt-2">
-              <span className="text-[#7A8493]">Store Code:</span>
+            <div className="flex items-center justify-between text-xs border-t border-slate-100 pt-2">
+              <span className="text-slate-500">Store Code:</span>
               <div className="flex items-center gap-1.5">
                 <code className="font-bold text-[#0F2044]">{store.code}</code>
                 <button
@@ -423,7 +423,7 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#7A8493]">Store ID:</span>
+              <span className="text-slate-500">Store ID:</span>
               <div className="flex items-center gap-1.5">
                 <code className="font-bold text-[#0F2044]">{store.id}</code>
                 <button
@@ -437,13 +437,13 @@ export function AdminGateQRTab({ storeId = LAUNCH_STORE_ID }: AdminGateQRTabProp
             </div>
 
             <div className="flex items-center justify-between text-xs">
-              <span className="text-[#7A8493]">Operating Hours:</span>
+              <span className="text-slate-500">Operating Hours:</span>
               <span className="font-semibold text-slate-700">{store.timing}</span>
             </div>
           </div>
 
           {/* Security & Verification Checklist */}
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/70 p-4 shadow-sm backdrop-blur-md space-y-2.5">
+          <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs space-y-2.5">
             <h3 className="text-xs font-bold text-emerald-950 flex items-center gap-1.5 uppercase tracking-wider">
               <span>🛡️</span>
               <span>Entrance Security Model</span>

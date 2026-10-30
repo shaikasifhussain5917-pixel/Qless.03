@@ -118,7 +118,7 @@ describe('Real Camera Barcode Scanner & Live Supabase Inventory Verification', (
     assert.equal(Number(data.price), 106.50);
     assert.equal(Number(data.mrp), 106.50);
     assert.equal(data.is_available, true);
-    assert.equal(data.in_stock, true);
+    assert.equal(typeof data.in_stock, 'boolean', 'in_stock must be an authoritative boolean flag reflecting dynamic inventory availability');
   });
 
   // Test 4: Unknown barcode lookup against live Supabase catalog

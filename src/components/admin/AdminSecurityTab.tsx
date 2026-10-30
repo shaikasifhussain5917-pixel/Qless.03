@@ -72,49 +72,61 @@ export function AdminSecurityTab({
     <div className="space-y-4 qless-fade-in text-xs">
       {/* ── SECURITY KPI CARDS ── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#2E9E44] block mb-1">
-            Verified Clearances
-          </span>
-          <p className="font-poppins text-xl font-extrabold text-[#2E9E44]">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700">
+              Verified Clearances
+            </span>
+            <span className="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {verifiedCount}
           </p>
-          <p className="text-[10px] text-[#7A8493] mt-0.5">{passRate}% gate clearance rate</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">{passRate}% gate clearance rate</p>
         </div>
 
-        <div className="rounded-2xl border border-amber-300 bg-amber-50/70 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-900 block mb-1">
-            Duplicate Scans
-          </span>
-          <p className="font-poppins text-xl font-extrabold text-amber-950">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-amber-700">
+              Duplicate Scans
+            </span>
+            <span className="h-2 w-2 rounded-full bg-amber-500"></span>
+          </div>
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {duplicateCount}
           </p>
-          <p className="text-[10px] text-amber-800 mt-0.5">Attempted repeat exits</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Attempted repeat exits</p>
         </div>
 
-        <div className="rounded-2xl border border-red-200 bg-red-50/70 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-red-900 block mb-1">
-            Gate Denials / Failures
-          </span>
-          <p className="font-poppins text-xl font-extrabold text-red-950">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-rose-700">
+              Gate Denials / Failures
+            </span>
+            <span className="h-2 w-2 rounded-full bg-rose-500"></span>
+          </div>
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {failureCount}
           </p>
-          <p className="text-[10px] text-red-800 mt-0.5">Expired, mismatched, or fake</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Expired, mismatched, or fake</p>
         </div>
 
-        <div className="rounded-2xl border border-purple-200 bg-purple-50/70 p-4 shadow-sm backdrop-blur-md">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-purple-900 block mb-1">
-            Flagged Discrepancies
-          </span>
-          <p className="font-poppins text-xl font-extrabold text-purple-950">
+        <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs">
+          <div className="flex items-center justify-between mb-1.5">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700">
+              Flagged Discrepancies
+            </span>
+            <span className="h-2 w-2 rounded-full bg-purple-500"></span>
+          </div>
+          <p className="font-poppins text-2xl font-extrabold text-[#0F2044]">
             {discrepancyCount}
           </p>
-          <p className="text-[10px] text-purple-800 mt-0.5">Item spot-check issues</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Item spot-check issues</p>
         </div>
       </div>
 
       {/* ── SECURITY LOG HEADER ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md space-y-3">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -169,7 +181,7 @@ export function AdminSecurityTab({
       </div>
 
       {/* ── AUDIT LOG DATA CONTAINER ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md overflow-x-auto">
+      <div className="rounded-xl border border-slate-200/80 bg-white p-4 shadow-xs overflow-x-auto">
         {isLoading ? (
           <div className="py-16 text-center text-[#7A8493]">
             <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#0F2044]">

@@ -171,7 +171,7 @@ export function BarcodeScannerModal({
           role="dialog"
           aria-modal="true"
           aria-labelledby="scanner-dialog-title"
-          className="flex flex-col w-full max-w-[500px] max-h-[92vh] sm:max-h-[85vh] rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_-16px_60px_rgba(15,32,68,0.25)] sm:shadow-[0_24px_70px_rgba(15,32,68,0.2)] qless-scale-in overflow-hidden"
+          className="flex flex-col w-full max-w-2xl max-h-[92vh] sm:max-h-[88vh] rounded-t-3xl sm:rounded-3xl bg-white shadow-[0_-16px_60px_rgba(15,32,68,0.25)] sm:shadow-[0_24px_70px_rgba(15,32,68,0.2)] qless-scale-in overflow-hidden"
           onMouseDown={(e) => e.stopPropagation()}
         >
           {/* Top handle on mobile */}

@@ -102,16 +102,22 @@ export function GuardCameraScanner({
         await scanner.start(
           { facingMode: "environment" },
           {
-            fps: 12,
+            fps: 15,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
               const edge = Math.min(viewfinderWidth, viewfinderHeight);
-              const size = Math.min(260, Math.max(180, Math.floor(edge * 0.75)));
+              // Large responsive scanning area (~75% of min dimension, up to 460px)
+              const size = Math.max(260, Math.min(460, Math.floor(edge * 0.75)));
               return {
-                width: size,
-                height: size,
+                width: Math.min(size, Math.max(240, viewfinderWidth - 24)),
+                height: Math.min(size, Math.max(240, viewfinderHeight - 24)),
               };
             },
-            aspectRatio: 1.0,
+            aspectRatio: 1.333333,
+            videoConstraints: {
+              facingMode: "environment",
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+            },
           },
           (decodedText) => {
             if (isCancelled) return;
@@ -192,54 +198,74 @@ export function GuardCameraScanner({
   }, [isScanning, onScanSuccess]);
 
   return (
-    <div className="flex flex-col space-y-3">
+    <div className="flex flex-col space-y-3.5">
       {/* Viewport Frame */}
       {isScanning && (status === "loading" || status === "active") && (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-[#2E9E44] bg-black min-h-[260px] shadow-lg">
-          <div id={containerId} className="w-full min-h-[260px]" />
+        <div className="relative overflow-hidden rounded-3xl border-2 border-[#2E9E44] bg-[#020617] min-h-[360px] sm:min-h-[440px] md:min-h-[500px] shadow-xl w-full">
+          <div id={containerId} className="w-full min-h-[360px] sm:min-h-[440px] md:min-h-[500px]" />
 
           {/* Loading Overlay */}
           {status === "loading" && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#F9FAFB] p-6 text-center z-10">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#EEF8F0] text-[#2E9E44]">
-                <svg className="h-6 w-6 animate-spin" viewBox="0 0 24 24" fill="none">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF8F0] text-[#2E9E44]">
+                <svg className="h-7 w-7 animate-spin" viewBox="0 0 24 24" fill="none">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z" />
                 </svg>
               </div>
               <p className="mt-3 font-poppins text-sm font-semibold text-[#0F2044]">
-                Initializing Guard Scanner…
+                Initializing Guard Turnstile Scanner…
               </p>
               <p className="mt-1 text-xs text-[#7A8493]">
-                Requesting rear camera access to scan customer exit passes.
+                Starting rear camera feed for customer exit QR verification.
               </p>
             </div>
           )}
 
-          {/* Active Scanning HUD Reticles */}
+          {/* Active Scanning HUD Reticles & Guidance */}
           {status === "active" && (
             <>
-              <div className="pointer-events-none absolute inset-5 qless-corner-pulse z-10" aria-hidden="true">
-                <span className="absolute left-0 top-0 h-8 w-8 rounded-tl-xl border-l-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
-                <span className="absolute right-0 top-0 h-8 w-8 rounded-tr-xl border-r-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
-                <span className="absolute bottom-0 left-0 h-8 w-8 rounded-bl-xl border-b-[3.5px] border-l-[3.5px] border-[#2E9E44]" />
-                <span className="absolute bottom-0 right-0 h-8 w-8 rounded-br-xl border-b-[3.5px] border-r-[3.5px] border-[#2E9E44]" />
+              {/* Top Camera Status Indicator */}
+              <div className="absolute top-3.5 inset-x-0 flex justify-center pointer-events-none z-10 px-4">
+                <div className="inline-flex items-center gap-2 rounded-full bg-black/75 backdrop-blur-md px-3.5 py-1 text-xs font-semibold text-white border border-white/15 shadow-sm">
+                  <span className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="tracking-wide">LIVE CAMERA ACTIVE</span>
+                </div>
               </div>
 
-              {/* Scanning Laser Beam */}
+              {/* Large Scanning Alignment Frame & Corner Indicators */}
+              <div className="pointer-events-none absolute inset-6 sm:inset-12 md:inset-16 qless-corner-pulse z-10 flex items-center justify-center" aria-hidden="true">
+                <div className="relative w-full h-full max-w-[420px] max-h-[420px] rounded-2xl border border-white/20">
+                  <span className="absolute -left-1 -top-1 h-12 w-12 sm:h-16 sm:w-16 rounded-tl-2xl border-l-[4px] border-t-[4px] border-[#2E9E44]" />
+                  <span className="absolute -right-1 -top-1 h-12 w-12 sm:h-16 sm:w-16 rounded-tr-2xl border-r-[4px] border-t-[4px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -left-1 h-12 w-12 sm:h-16 sm:w-16 rounded-bl-2xl border-b-[4px] border-l-[4px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -right-1 h-12 w-12 sm:h-16 sm:w-16 rounded-br-2xl border-b-[4px] border-r-[4px] border-[#2E9E44]" />
+                </div>
+              </div>
+
+              {/* Subtle Scanning Laser Beam */}
               <div
-                className="pointer-events-none absolute left-6 right-6 h-0.5 rounded-full qless-beam z-10"
+                className="pointer-events-none absolute left-8 right-8 h-0.5 rounded-full qless-beam z-10"
                 style={{
-                  background: "linear-gradient(90deg, transparent, #2E9E44, transparent)",
-                  boxShadow: "0 0 12px 2px rgba(46,158,68,0.7)",
+                  background: "linear-gradient(90deg, transparent, #2E9E44 50%, transparent)",
+                  boxShadow: "0 0 16px 3px rgba(46,158,68,0.85)",
                 }}
                 aria-hidden="true"
               />
 
-              <div className="absolute bottom-2 inset-x-0 text-center pointer-events-none z-10">
-                <span className="rounded-full bg-black/60 backdrop-blur-xs px-3 py-1 text-[11px] font-semibold text-white">
-                  Align customer phone QR within green frame
-                </span>
+              {/* Bottom Instruction Guidance */}
+              <div className="absolute bottom-4 inset-x-0 text-center pointer-events-none z-10 px-4">
+                <div className="inline-flex flex-col items-center gap-1 rounded-2xl bg-black/80 backdrop-blur-md px-4 py-2 border border-white/15 text-white shadow-lg">
+                  <div className="flex items-center gap-2">
+                    <span className="text-emerald-400 text-sm">📱</span>
+                    <span className="font-poppins text-xs sm:text-sm font-bold tracking-tight">
+                      Position Customer Exit QR Inside Frame
+                    </span>
+                  </div>
+                  <span className="text-[10.5px] text-slate-300">
+                    Hold phone at a comfortable distance (1–2 ft)
+                  </span>
+                </div>
               </div>
             </>
           )}
@@ -248,20 +274,20 @@ export function GuardCameraScanner({
 
       {/* Idle / Camera Off State */}
       {!isScanning && (
-        <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-[#0F2044]/15 bg-[#F9FAFB] p-6 text-center">
-          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF8F0] text-[#2E9E44] text-2xl shadow-xs">
+        <div className="flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-[#0F2044]/15 bg-white/80 p-8 sm:p-10 text-center shadow-xs">
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF8F0] text-[#2E9E44] text-3xl shadow-sm">
             📷
           </div>
-          <h4 className="mt-3 font-poppins text-sm font-bold text-[#0F2044]">
-            Camera Scanner Inactive
+          <h4 className="mt-4 font-poppins text-base font-bold text-[#0F2044]">
+            Turnstile Camera Scanner
           </h4>
-          <p className="mt-1 text-xs text-[#7A8493] max-w-xs leading-relaxed">
-            Click Start Scanner when the customer presents their Customer Exit QR Pass.
+          <p className="mt-1.5 text-xs text-[#7A8493] max-w-sm leading-relaxed">
+            Positioned at store exit. Ready to scan and verify customer exit QR passes.
           </p>
           <button
             type="button"
             onClick={onStartScanning}
-            className="mt-4 flex h-11 items-center justify-center gap-2 rounded-xl bg-[#2E9E44] px-5 font-poppins text-xs font-bold text-white shadow-md transition hover:bg-[#288B3B] active:scale-95"
+            className="mt-5 flex min-h-[44px] items-center justify-center gap-2 rounded-xl bg-[#2E9E44] px-6 py-2.5 font-poppins text-xs sm:text-sm font-bold text-white shadow-md transition hover:bg-[#288B3B] active:scale-95"
           >
             <IcCamera />
             <span>Start Camera Scanner</span>

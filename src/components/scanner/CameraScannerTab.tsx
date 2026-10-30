@@ -95,13 +95,17 @@ export function CameraScannerTab({
           {
             fps: 15,
             qrbox: (viewfinderWidth, viewfinderHeight) => {
-              const edge = Math.min(viewfinderWidth, viewfinderHeight);
               return {
-                width: Math.min(260, Math.max(180, Math.floor(edge * 0.85))),
-                height: Math.min(180, Math.max(120, Math.floor(edge * 0.6))),
+                width: Math.min(360, Math.max(220, Math.floor(viewfinderWidth * 0.82))),
+                height: Math.min(220, Math.max(130, Math.floor(viewfinderHeight * 0.52))),
               };
             },
             aspectRatio: 1.333333,
+            videoConstraints: {
+              facingMode: "environment",
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+            },
           },
           (decodedText) => {
             if (isCancelled) return;
@@ -207,9 +211,9 @@ export function CameraScannerTab({
     <div className="flex flex-col py-2 qless-fade-in">
       {/* ── LIVE CAMERA CONTAINER (renders during loading & active states) ── */}
       {(status === "loading" || status === "active") && (
-        <div className="relative overflow-hidden rounded-2xl border-2 border-[#2E9E44]/70 bg-black min-h-[220px] shadow-inner">
+        <div className="relative overflow-hidden rounded-2xl border-2 border-[#2E9E44]/70 bg-black min-h-[300px] sm:min-h-[360px] shadow-inner">
           {/* html5-qrcode video viewport */}
-          <div id={containerId} className="w-full min-h-[220px]" />
+          <div id={containerId} className="w-full min-h-[300px] sm:min-h-[360px]" />
 
           {/* Loading Overlay */}
           {status === "loading" && (
@@ -243,14 +247,25 @@ export function CameraScannerTab({
           {/* Active HUD: Target Reticle Brackets */}
           {status === "active" && (
             <>
+              {/* Top Camera Status Indicator */}
+              <div className="absolute top-3 inset-x-0 flex justify-center pointer-events-none z-10 px-4">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-black/75 backdrop-blur-md px-3 py-0.5 text-[11px] font-semibold text-white border border-white/15 shadow-sm">
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="tracking-wide">BARCODE SCANNER READY</span>
+                </div>
+              </div>
+
+              {/* Viewfinder corner brackets */}
               <div
-                className="pointer-events-none absolute inset-4 qless-corner-pulse z-10"
+                className="pointer-events-none absolute inset-6 sm:inset-10 qless-corner-pulse z-10 flex items-center justify-center"
                 aria-hidden="true"
               >
-                <span className="absolute left-0 top-0 h-6 w-6 rounded-tl-xl border-l-[3px] border-t-[3px] border-[#2E9E44]" />
-                <span className="absolute right-0 top-0 h-6 w-6 rounded-tr-xl border-r-[3px] border-t-[3px] border-[#2E9E44]" />
-                <span className="absolute bottom-0 left-0 h-6 w-6 rounded-bl-xl border-b-[3px] border-l-[3px] border-[#2E9E44]" />
-                <span className="absolute bottom-0 right-0 h-6 w-6 rounded-br-xl border-b-[3px] border-r-[3px] border-[#2E9E44]" />
+                <div className="relative w-full h-full max-w-[360px] max-h-[220px] rounded-2xl border border-white/20">
+                  <span className="absolute -left-1 -top-1 h-8 w-8 sm:h-10 sm:w-10 rounded-tl-xl border-l-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -right-1 -top-1 h-8 w-8 sm:h-10 sm:w-10 rounded-tr-xl border-r-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -left-1 h-8 w-8 sm:h-10 sm:w-10 rounded-bl-xl border-b-[3.5px] border-l-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -right-1 h-8 w-8 sm:h-10 sm:w-10 rounded-br-xl border-b-[3.5px] border-r-[3.5px] border-[#2E9E44]" />
+                </div>
               </div>
 
               {/* Scanning Laser Beam */}
@@ -271,7 +286,10 @@ export function CameraScannerTab({
       {status === "active" && (
         <div className="mt-3 text-center">
           <p className="font-poppins text-xs font-bold text-[#0F2044]">
-            Position barcode (EAN-13, EAN-8, UPC) inside the green frame
+            Align Product Barcode Inside Frame
+          </p>
+          <p className="mt-0.5 text-[11px] text-[#7A8493]">
+            Supports physical retail barcodes (EAN-13, EAN-8, UPC-A, Code 128).
           </p>
           <p className="mt-0.5 text-[11px] text-[#7A8493]">
             Camera uses autofocus to decode physical retail product barcodes.

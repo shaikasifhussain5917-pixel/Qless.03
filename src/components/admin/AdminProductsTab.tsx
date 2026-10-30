@@ -212,6 +212,7 @@ export function AdminProductsTab({
       if (stockFilter === "in_stock" && stock <= 10) return false;
       if (stockFilter === "low_stock" && (stock > 10 || stock === 0)) return false;
       if (stockFilter === "out_of_stock" && stock > 0) return false;
+      if (stockFilter === "alerts" && stock > 10) return false;
 
       // Availability filter
       if (availabilityFilter === "available" && !item.isAvailable) return false;
@@ -301,7 +302,7 @@ export function AdminProductsTab({
       )}
 
       {/* ── HEADER & SEARCH BAR CONTROLS ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md space-y-3">
+      <div className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
             <div className="flex items-center gap-2">
@@ -385,9 +386,10 @@ export function AdminProductsTab({
               className="w-full rounded-xl border border-black/10 bg-[#F9FAFB] px-3 py-2 text-xs font-medium text-[#0F2044] focus:border-[#2E9E44] focus:bg-white focus:outline-none"
             >
               <option value="all">Stock Filter: All Items</option>
-              <option value="in_stock">In Stock (&gt; 10 units)</option>
+              <option value="alerts">All Restock Alerts (≤ 10 units)</option>
               <option value="low_stock">Low Stock (1 to 10 units)</option>
               <option value="out_of_stock">Out of Stock (0 units)</option>
+              <option value="in_stock">In Stock (&gt; 10 units)</option>
             </select>
           </div>
 
@@ -433,7 +435,7 @@ export function AdminProductsTab({
       </div>
 
       {/* ── PRODUCTS TABLE ── */}
-      <div className="rounded-2xl border border-white/70 bg-white/95 p-4 shadow-sm backdrop-blur-md overflow-x-auto">
+      <div className="rounded-2xl border border-slate-200/80 bg-white shadow-xs overflow-hidden">
         {filteredItems.length === 0 ? (
           <div className="p-8 text-center text-[#7A8493]">
             <span className="text-2xl block mb-2">🔍</span>
@@ -441,16 +443,17 @@ export function AdminProductsTab({
             <p className="text-xs mt-1">Try adjusting your search query, department, or stock filters.</p>
           </div>
         ) : (
-          <table className="w-full text-left text-xs min-w-[680px]">
+          <div className="overflow-x-auto p-4">
+            <table className="w-full text-left text-xs min-w-[860px]">
             <thead>
               <tr className="border-b border-black/5 text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
-                <th className="pb-2.5">Product &amp; SKU</th>
-                <th className="pb-2.5">Barcode</th>
-                <th className="pb-2.5">Department</th>
-                <th className="pb-2.5">Price / MRP</th>
-                <th className="pb-2.5">Stock</th>
-                <th className="pb-2.5">Shelf Status</th>
-                <th className="pb-2.5 text-right">Actions</th>
+                <th className="pb-2.5 min-w-[200px] whitespace-nowrap">Product &amp; SKU</th>
+                <th className="pb-2.5 min-w-[120px] whitespace-nowrap">Barcode</th>
+                <th className="pb-2.5 min-w-[120px] whitespace-nowrap">Department</th>
+                <th className="pb-2.5 min-w-[100px] whitespace-nowrap">Price / MRP</th>
+                <th className="pb-2.5 min-w-[90px] whitespace-nowrap">Stock</th>
+                <th className="pb-2.5 min-w-[110px] whitespace-nowrap">Shelf Status</th>
+                <th className="pb-2.5 min-w-[140px] whitespace-nowrap text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/5">
@@ -568,6 +571,7 @@ export function AdminProductsTab({
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

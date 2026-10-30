@@ -4,8 +4,6 @@ import { useAuth } from "../../context/AuthContext";
 import {
   LAUNCH_STORE,
   LAUNCH_STORE_CODE,
-  LAUNCH_STORE_ID,
-  generateEntranceQRPayload,
 } from "../../config/storeConfig";
 import { Html5Qrcode } from "html5-qrcode";
 
@@ -54,9 +52,21 @@ export function StoreEntranceGate() {
         await html5QrCode.start(
           { facingMode: "environment" },
           {
-            fps: 10,
-            qrbox: { width: 220, height: 220 },
-            aspectRatio: 1.0,
+            fps: 15,
+            qrbox: (w, h) => {
+              const edge = Math.min(w, h);
+              const size = Math.max(240, Math.min(380, Math.floor(edge * 0.75)));
+              return {
+                width: Math.min(size, Math.max(220, w - 24)),
+                height: Math.min(size, Math.max(220, h - 24)),
+              };
+            },
+            aspectRatio: 1.333333,
+            videoConstraints: {
+              facingMode: "environment",
+              width: { min: 640, ideal: 1280 },
+              height: { min: 480, ideal: 720 },
+            },
           },
           (decodedText) => {
             if (!isMounted) return;
@@ -73,7 +83,7 @@ export function StoreEntranceGate() {
         if (!isMounted) return;
         console.warn("Entrance camera start error:", err);
         setCameraError(
-          "Camera access could not be initialized. Please use manual code entry or demo auto-scan below."
+          "Camera access could not be initialized. Please use manual code entry below."
         );
         setCameraActive(false);
       }
@@ -130,11 +140,6 @@ export function StoreEntranceGate() {
       return;
     }
     handleProcessVerification(inputCode.trim());
-  };
-
-  const handleDemoAutoScan = () => {
-    const officialPayload = generateEntranceQRPayload(LAUNCH_STORE_CODE);
-    handleProcessVerification(officialPayload);
   };
 
   return (
@@ -201,21 +206,53 @@ export function StoreEntranceGate() {
 
         {/* Camera Scanner View Area */}
         {cameraActive ? (
-          <div className="rounded-2xl border-2 border-dashed border-[#2E9E44] bg-black/5 p-3 text-center space-y-3">
-            <div
-              id={scannerContainerId}
-              className="mx-auto w-full max-w-[280px] overflow-hidden rounded-xl bg-black"
-            />
-            <p className="text-[11px] text-[#7A8493]">
-              Point your camera at the QLess Mart turnstile gate QR code.
-            </p>
-            <button
-              type="button"
-              onClick={() => setCameraActive(false)}
-              className="rounded-xl border border-black/10 bg-white px-3.5 py-1.5 text-xs font-semibold text-[#0F2044] hover:bg-slate-50 transition"
-            >
-              Cancel Camera Scan
-            </button>
+          <div className="space-y-3">
+            <div className="relative overflow-hidden rounded-2xl border-2 border-[#2E9E44]/70 bg-black min-h-[340px] sm:min-h-[420px] shadow-inner flex flex-col justify-center">
+              <div
+                id={scannerContainerId}
+                className="w-full min-h-[340px] sm:min-h-[420px]"
+              />
+
+              {/* Corner indicators */}
+              <div
+                className="pointer-events-none absolute inset-6 sm:inset-10 qless-corner-pulse z-10 flex items-center justify-center"
+                aria-hidden="true"
+              >
+                <div className="relative w-full h-full max-w-[340px] max-h-[340px] rounded-2xl border border-white/20">
+                  <span className="absolute -left-1 -top-1 h-10 w-10 sm:h-12 sm:w-12 rounded-tl-2xl border-l-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -right-1 -top-1 h-10 w-10 sm:h-12 sm:w-12 rounded-tr-2xl border-r-[3.5px] border-t-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -left-1 h-10 w-10 sm:h-12 sm:w-12 rounded-bl-2xl border-b-[3.5px] border-l-[3.5px] border-[#2E9E44]" />
+                  <span className="absolute -bottom-1 -right-1 h-10 w-10 sm:h-12 sm:w-12 rounded-br-2xl border-b-[3.5px] border-r-[3.5px] border-[#2E9E44]" />
+                </div>
+              </div>
+
+              {/* Scan laser */}
+              <div
+                className="pointer-events-none absolute left-6 right-6 h-0.5 rounded-full qless-beam z-10"
+                style={{
+                  background: "linear-gradient(90deg, transparent, #2E9E44 50%, transparent)",
+                  boxShadow: "0 0 12px 2px rgba(46,158,68,0.8)",
+                }}
+                aria-hidden="true"
+              />
+
+              {/* Guidance badge */}
+              <div className="absolute bottom-3 inset-x-0 text-center pointer-events-none z-10 px-4">
+                <span className="inline-block rounded-xl bg-black/80 px-3.5 py-1 text-xs font-semibold text-white border border-white/10 shadow-sm">
+                  Position Store Entrance QR Inside Frame
+                </span>
+              </div>
+            </div>
+
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setCameraActive(false)}
+                className="rounded-xl border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-[#0F2044] hover:bg-slate-50 transition shadow-2xs active:scale-95"
+              >
+                Cancel Camera Scan
+              </button>
+            </div>
           </div>
         ) : (
           <div className="space-y-3">
@@ -282,22 +319,6 @@ export function StoreEntranceGate() {
                 )}
               </button>
             </form>
-
-            {/* Fast Demo Auto-Scan Button */}
-            <div className="pt-2 border-t border-black/5">
-              <button
-                type="button"
-                onClick={handleDemoAutoScan}
-                disabled={isVerifying}
-                className="w-full rounded-2xl border border-emerald-400 bg-emerald-50/80 py-2.5 px-3 font-poppins text-xs font-bold text-emerald-800 hover:bg-emerald-100 transition active:scale-[0.99] flex items-center justify-center gap-1.5"
-              >
-                <span>⚡</span>
-                <span>[Demo Sandbox] Auto-Scan Official Entrance QR ({LAUNCH_STORE_CODE})</span>
-              </button>
-              <p className="mt-1 text-center text-[10px] text-[#9AA3AF]">
-                Simulates scanning the verified {LAUNCH_STORE.name} ({LAUNCH_STORE_ID}) turnstile token.
-              </p>
-            </div>
           </div>
         )}
       </div>

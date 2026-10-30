@@ -9,6 +9,16 @@ interface AdminSidebarProps {
   lowStockCount: number;
   totalOrdersCount: number;
   unresolvedDiscrepanciesCount: number;
+  isMobileOpen?: boolean;
+  onCloseMobile?: () => void;
+}
+
+interface NavItem {
+  id: AdminTab;
+  label: string;
+  icon: string;
+  badge?: number;
+  badgeColor?: string;
 }
 
 export function AdminSidebar({
@@ -18,136 +28,171 @@ export function AdminSidebar({
   lowStockCount,
   totalOrdersCount,
   unresolvedDiscrepanciesCount,
+  isMobileOpen = false,
+  onCloseMobile,
 }: AdminSidebarProps) {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
-  const navItems: Array<{ id: AdminTab; label: string; icon: string; badge?: number; badgeColor?: string }> = [
-    { id: "overview", label: "Overview", icon: "📊" },
-    { id: "products", label: "Products Catalog", icon: "🏷️" },
+  // Navigation structure organized by operational domain
+  const navSections: Array<{ title: string; items: NavItem[] }> = [
     {
-      id: "inventory",
-      label: "Stock & Inventory",
-      icon: "📦",
-      badge: lowStockCount > 0 ? lowStockCount : undefined,
-      badgeColor: "bg-amber-500 text-white",
+      title: "OVERVIEW",
+      items: [
+        { id: "overview", label: "Dashboard", icon: "📊" },
+      ],
     },
     {
-      id: "stock-import",
-      label: "Smart Stock Import",
-      icon: "📥",
+      title: "INVENTORY",
+      items: [
+        { id: "products", label: "Products Catalog", icon: "🏷️" },
+        {
+          id: "inventory",
+          label: "Stock & Inventory",
+          icon: "📦",
+          badge: lowStockCount > 0 ? lowStockCount : undefined,
+          badgeColor: "bg-amber-500 text-white",
+        },
+        { id: "stock-import", label: "Smart Stock Intake", icon: "📥" },
+        { id: "locations", label: "Rack & Locations", icon: "📍" },
+      ],
     },
     {
-      id: "locations",
-      label: "Product Locations",
-      icon: "📍",
-    },
-    {
-      id: "transactions",
-      label: "Sales & Orders",
-      icon: "💳",
-      badge: totalOrdersCount > 0 ? totalOrdersCount : undefined,
-      badgeColor: "bg-[#0F2044] text-white",
-    },
-    {
-      id: "security",
-      label: "Security Audit",
-      icon: "🛡️",
-      badge: unresolvedDiscrepanciesCount > 0 ? unresolvedDiscrepanciesCount : undefined,
-      badgeColor: "bg-red-500 text-white",
-    },
-    {
-      id: "gate-qr",
-      label: "Gate QR Pass",
-      icon: "🚪",
+      title: "OPERATIONS",
+      items: [
+        {
+          id: "transactions",
+          label: "Orders & Sales",
+          icon: "🧾",
+          badge: totalOrdersCount > 0 ? totalOrdersCount : undefined,
+          badgeColor: "bg-[#0F2044] text-white",
+        },
+        {
+          id: "security",
+          label: "Security Audit",
+          icon: "🛡️",
+          badge: unresolvedDiscrepanciesCount > 0 ? unresolvedDiscrepanciesCount : undefined,
+          badgeColor: "bg-red-500 text-white",
+        },
+        { id: "gate-qr", label: "Gate Turnstile QR", icon: "🚪" },
+      ],
     },
   ];
 
-  return (
-    <aside className="w-full lg:w-64 shrink-0 rounded-3xl border border-white/70 bg-white/95 p-4 sm:p-5 shadow-sm backdrop-blur-md flex flex-col justify-between space-y-5">
-      <div className="space-y-5">
-        {/* Portal Branding */}
-        <div className="border-b border-black/5 pb-4">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0F2044] text-white font-bold text-sm shadow-xs">
-              Q
-            </span>
-            <div>
-              <p className="font-poppins text-base font-extrabold text-[#0F2044] leading-tight tracking-tight">
-                QLESS ADMIN
-              </p>
-              <p className="text-[10px] font-semibold text-[#2E9E44] uppercase tracking-wider">
-                Store Operations Portal
-              </p>
+  const renderContent = (isMobile: boolean) => (
+    <>
+      <div className="space-y-4 shrink-0">
+        {/* Portal Branding & Store Selector */}
+        <div className="border-b border-slate-100 pb-3.5">
+          <div className="flex items-center justify-between gap-2.5 mb-2.5">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0F2044] text-white font-bold text-sm shadow-2xs">
+                Q
+              </span>
+              <div>
+                <p className="font-poppins text-sm font-extrabold text-[#0F2044] leading-tight tracking-tight">
+                  QLess Admin
+                </p>
+                <p className="text-[10px] font-semibold text-[#2E9E44] uppercase tracking-wider">
+                  Supermarket Console
+                </p>
+              </div>
             </div>
+
+            {isMobile && onCloseMobile && (
+              <button
+                type="button"
+                onClick={onCloseMobile}
+                className="flex h-8 w-8 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 transition cursor-pointer"
+                aria-label="Close navigation"
+              >
+                ✕
+              </button>
+            )}
           </div>
 
-          <div className="mt-3 rounded-xl bg-[#F9FAFB] p-2.5 border border-black/5 text-[11px]">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold text-[#8A94A3] uppercase block">
-                Store Node
+          {/* Store Selector Pill */}
+          <div className="rounded-xl bg-slate-50/80 p-2.5 border border-slate-200/60 text-[11px]">
+            <div className="flex items-center justify-between mb-0.5">
+              <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block">
+                Active Branch
               </span>
               <span className="text-[9px] font-mono font-bold bg-[#0F2044] text-white px-1.5 py-0.2 rounded">
-                STORE001
+                {selectedStore?.code || "STORE001"}
               </span>
             </div>
-            <p className="font-semibold text-[#0F2044] truncate mt-1">
+            <p className="font-bold text-[#0F2044] truncate">
               {selectedStore?.name || "QLess Mart"}
             </p>
-            <p className="text-[10px] text-[#7A8493]">{selectedStore?.branch || "HSR Layout Flagship"}</p>
+            <p className="text-[10px] text-slate-500 truncate">
+              {selectedStore?.branch || "HSR Layout Flagship"}
+            </p>
           </div>
         </div>
-
-        {/* Navigation Tabs */}
-        <nav className="space-y-1">
-          <p className="px-2 text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] mb-1.5">
-            Management Modules
-          </p>
-          {navItems.map((item) => {
-            const active = currentTab === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onSelectTab(item.id)}
-                className={`flex w-full items-center justify-between rounded-xl px-3 py-2.5 font-poppins text-xs font-semibold transition ${
-                  active
-                    ? "bg-[#0F2044] text-white shadow-xs"
-                    : "text-[#7A8493] hover:bg-[#F8F9FA] hover:text-[#0F2044]"
-                }`}
-              >
-                <div className="flex items-center gap-2.5">
-                  <span className="text-base">{item.icon}</span>
-                  <span>{item.label}</span>
-                </div>
-                {item.badge !== undefined && (
-                  <span
-                    className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold ${
-                      active ? "bg-white text-[#0F2044]" : item.badgeColor || "bg-[#F0F2F5] text-[#0F2044]"
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
       </div>
 
-      {/* Active Admin Session & Logout */}
-      <div className="border-t border-black/5 pt-4 space-y-2.5">
-        <div className="flex items-center justify-between rounded-2xl bg-black/5 p-2.5">
+      {/* Grouped Navigation */}
+      <nav className="space-y-4 flex-1 py-3 overflow-y-auto pr-0.5">
+        {navSections.map((section) => (
+          <div key={section.title} className="space-y-1">
+            <p className="px-2.5 text-[9.5px] font-bold uppercase tracking-wider text-slate-400">
+              {section.title}
+            </p>
+            <div className="space-y-0.5">
+              {section.items.map((item) => {
+                const active = currentTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      onSelectTab(item.id);
+                      if (isMobile && onCloseMobile) {
+                        onCloseMobile();
+                      }
+                    }}
+                    className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 font-poppins text-xs transition cursor-pointer min-h-[36px] ${
+                      active
+                        ? "bg-[#0F2044] text-white font-bold shadow-xs"
+                        : "text-slate-600 font-medium hover:bg-slate-50 hover:text-[#0F2044]"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-sm shrink-0">{item.icon}</span>
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.badge !== undefined && (
+                      <span
+                        className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold shrink-0 ${
+                          active
+                            ? "bg-white text-[#0F2044]"
+                            : item.badgeColor || "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </nav>
+
+      {/* Admin Session & Bottom Utilities */}
+      <div className="border-t border-slate-100 pt-3 space-y-2 shrink-0">
+        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2 border border-slate-200/60">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xl bg-[#0F2044] text-[10px] font-bold text-white">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0F2044] text-[10px] font-bold text-white shadow-2xs">
               {user?.avatarInitials || "AD"}
             </span>
             <div className="min-w-0">
               <p className="truncate text-xs font-bold text-[#0F2044]">
                 {user?.name || "Store Admin"}
               </p>
-              <p className="text-[10px] text-[#7A8493] leading-none">
-                {user?.role || "ADMIN"} · Verified Demo
+              <p className="text-[9.5px] text-slate-400 leading-none">
+                {user?.role || "ADMIN"} · Verified
               </p>
             </div>
           </div>
@@ -157,22 +202,39 @@ export function AdminSidebar({
               logout();
               navigate("/auth/admin");
             }}
-            className="text-[11px] font-bold text-red-600 hover:text-red-700 px-2 py-1 rounded-lg hover:bg-red-50 transition"
+            className="text-[10px] font-bold text-red-600 hover:text-red-700 px-2.5 py-1.5 rounded-md hover:bg-red-50 transition cursor-pointer min-h-[30px]"
             title="Sign out of Admin Portal"
           >
             Sign Out
           </button>
         </div>
-
-        <button
-          type="button"
-          onClick={() => navigate("/auth/role")}
-          className="flex w-full items-center justify-center gap-1.5 rounded-xl border border-black/10 bg-white py-1.5 text-[11px] font-semibold text-[#0F2044] hover:bg-[#F8F9FA] transition"
-        >
-          <span>🔄</span>
-          <span>Switch Operating Portal</span>
-        </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop Fixed Sidebar: 100% stable, never affected by window or content scroll */}
+      <aside className="hidden lg:flex w-64 h-full shrink-0 border-r border-slate-200/80 bg-white p-4 flex-col justify-between overflow-y-auto select-none shadow-xs">
+        {renderContent(false)}
+      </aside>
+
+      {/* Mobile Slide-Over Drawer */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden flex">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={onCloseMobile}
+            aria-hidden="true"
+          />
+
+          {/* Drawer container */}
+          <div className="relative z-50 w-72 max-w-[85vw] h-full bg-white p-4 shadow-2xl flex flex-col justify-between overflow-y-auto">
+            {renderContent(true)}
+          </div>
+        </div>
+      )}
+    </>
   );
 }
