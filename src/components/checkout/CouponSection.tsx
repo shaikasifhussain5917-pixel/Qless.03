@@ -52,33 +52,33 @@ export function CouponSection({
   };
 
   return (
-    <div className="rounded-2xl border border-white/60 bg-white/90 p-5 shadow-[0_8px_24px_rgba(15,32,68,0.08)] backdrop-blur-md">
+    <div className="rounded-3xl border border-slate-200/80 bg-white p-5 shadow-xs">
       <div className="flex items-center justify-between mb-3">
-        <h3 className="font-poppins text-sm font-bold text-[#0F2044]">
+        <h3 className="font-poppins text-sm font-bold text-[#101828]">
           Offers &amp; Coupons
         </h3>
-        <span className="text-[11px] text-[#7A8493] font-medium">
-          Demo Store Promo Codes
+        <span className="text-[11px] text-[#667085] font-medium">
+          Store Promo Codes
         </span>
       </div>
 
       {/* Applied Coupon Banner */}
       {appliedCoupon ? (
-        <div className="rounded-xl border border-[#2E9E44]/30 bg-[#EEF8F0] p-3 flex items-center justify-between qless-scale-in">
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-3.5 flex items-center justify-between qless-scale-in">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#2E9E44] text-white">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#16A36A] text-white shadow-2xs">
               <IcCheck />
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="font-mono text-xs font-bold text-[#2E9E44] tracking-wider">
+                <span className="font-mono text-xs font-bold text-[#16A36A] tracking-wider">
                   {appliedCoupon.code}
                 </span>
-                <span className="rounded bg-white/80 px-1.5 py-0.2 text-[10px] font-bold text-[#2E9E44]">
+                <span className="rounded bg-white/90 px-1.5 py-0.2 text-[10px] font-bold text-[#16A36A] border border-emerald-200/60">
                   APPLIED
                 </span>
               </div>
-              <p className="text-[11px] text-[#288B3B]">
+              <p className="text-[11px] text-[#15803d]">
                 {appliedCoupon.description}
               </p>
             </div>
@@ -87,7 +87,7 @@ export function CouponSection({
           <button
             type="button"
             onClick={onRemoveCoupon}
-            className="rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 shadow-xs hover:bg-red-50 transition active:scale-95"
+            className="rounded-xl bg-white px-3 py-1.5 text-xs font-semibold text-red-600 border border-red-200 shadow-2xs hover:bg-red-50 transition active:scale-95 cursor-pointer"
             aria-label={`Remove coupon ${appliedCoupon.code}`}
           >
             Remove
@@ -95,7 +95,7 @@ export function CouponSection({
         </div>
       ) : (
         /* Coupon Input Form */
-        <form onSubmit={handleApply} className="space-y-2.5">
+        <form onSubmit={handleApply} className="space-y-3">
           <div className="flex gap-2">
             <div className="relative flex-1">
               <input
@@ -107,8 +107,8 @@ export function CouponSection({
                   if (errorMessage) setErrorMessage(null);
                   if (successMessage) setSuccessMessage(null);
                 }}
-                placeholder="Enter coupon code (e.g. SAVE10)"
-                className="w-full rounded-xl border border-black/10 bg-[#F9FAFB] py-2.5 px-3.5 font-mono text-xs font-bold uppercase text-[#0F2044] placeholder-[#9AA3AF] placeholder:normal-case transition focus:border-[#2E9E44] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#2E9E44]/20"
+                placeholder="Enter promo code (e.g. SAVE10)"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-3.5 font-mono text-xs font-bold uppercase text-[#101828] placeholder-[#9AA3AF] placeholder:normal-case transition focus:border-[#16A36A] focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#16A36A]/20"
                 aria-label="Enter promotional coupon code"
               />
             </div>
@@ -116,7 +116,7 @@ export function CouponSection({
             <button
               type="submit"
               disabled={!couponInput.trim()}
-              className="rounded-xl bg-[#0F2044] px-4 py-2.5 font-poppins text-xs font-semibold text-white shadow-xs transition hover:bg-[#1A3163] disabled:opacity-40 disabled:cursor-not-allowed active:scale-95"
+              className="rounded-xl bg-[#101828] px-4 py-2.5 font-poppins text-xs font-semibold text-white shadow-xs transition hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 cursor-pointer"
             >
               Apply
             </button>
@@ -136,7 +136,7 @@ export function CouponSection({
           {successMessage && (
             <div
               role="status"
-              className="rounded-xl border border-[#2E9E44]/30 bg-[#EEF8F0] p-2.5 text-xs text-[#288B3B] qless-fade-in flex items-start gap-2"
+              className="rounded-xl border border-emerald-200 bg-emerald-50 p-2.5 text-xs text-[#16A36A] qless-fade-in flex items-start gap-2"
             >
               <span className="font-bold">✓</span>
               <p className="flex-1">{successMessage}</p>
@@ -144,9 +144,9 @@ export function CouponSection({
           )}
 
           {/* Quick Clickable Demo Coupon Badges */}
-          <div className="pt-2">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] mb-1.5">
-              Available Demo Coupons
+          <div className="pt-1.5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-[#667085] mb-2">
+              Available Store Coupons
             </p>
             <div className="flex flex-wrap gap-1.5">
               {AVAILABLE_COUPONS.map((coupon) => {
@@ -156,16 +156,16 @@ export function CouponSection({
                     key={coupon.code}
                     type="button"
                     onClick={() => handleQuickFill(coupon.code)}
-                    className={`flex items-center gap-1.5 rounded-xl border px-2.5 py-1.5 text-left text-xs transition active:scale-95 ${
+                    className={`flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-left text-xs transition active:scale-95 cursor-pointer ${
                       meetsMin
-                        ? "border-[#2E9E44]/30 bg-[#EEF8F0] hover:bg-[#E2F4E6] text-[#0F2044]"
-                        : "border-black/5 bg-[#F9FAFB] hover:bg-[#F0F2F5] text-[#7A8493]"
+                        ? "border-emerald-200 bg-emerald-50/70 hover:bg-emerald-100/70 text-[#101828]"
+                        : "border-slate-200 bg-slate-50 hover:bg-slate-100 text-[#667085]"
                     }`}
                   >
-                    <span className="font-mono font-bold text-[#2E9E44]">
+                    <span className="font-mono font-bold text-[#16A36A]">
                       {coupon.code}
                     </span>
-                    <span className="text-[11px] text-[#7A8493]">
+                    <span className="text-[11px] text-[#667085]">
                       · {coupon.code === "SAVE10" ? "10% OFF" : `₹50 OFF (min ${fmt(500)})`}
                     </span>
                   </button>

@@ -87,8 +87,21 @@ export function CustomerProfileScreen() {
       maxWidthClass="max-w-[480px]"
       showCustomerNav={true}
       activeNav="profile"
-      onBack={() => navigate("/shop")}
-      backLabel="Return to Shopping Cart"
+      onBack={() => {
+        if (user?.role === "CASHIER") navigate("/cashier");
+        else if (user?.role === "ADMIN" || user?.role === "STORE_ADMIN") navigate("/admin");
+        else if (user?.role === "SECURITY_GUARD") navigate("/security");
+        else navigate("/shop");
+      }}
+      backLabel={
+        user?.role === "CASHIER"
+          ? "Return to Cashier Desk"
+          : user?.role === "ADMIN" || user?.role === "STORE_ADMIN"
+          ? "Return to Admin Console"
+          : user?.role === "SECURITY_GUARD"
+          ? "Return to Security Desk"
+          : "Return to Shopping Cart"
+      }
     >
       <div className="space-y-4 pb-10 qless-fade-in">
         {/* Profile Card Header */}
@@ -112,7 +125,13 @@ export function CustomerProfileScreen() {
           <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
             <span className="rounded-full bg-emerald-100 border border-emerald-200 px-3 py-1 text-xs font-bold text-emerald-800 flex items-center gap-1.5 shadow-2xs">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              Verified Demo Shopper
+              {user?.role === "CASHIER"
+                ? "Verified Cashier Staff"
+                : user?.role === "SECURITY_GUARD"
+                ? "Verified Security Staff"
+                : user?.role === "ADMIN" || user?.role === "STORE_ADMIN"
+                ? "Verified Store Administrator"
+                : "Verified Demo Shopper"}
             </span>
 
             <span className="rounded-full bg-slate-100 border border-slate-200 px-3 py-1 text-xs font-semibold text-slate-700">
@@ -335,14 +354,44 @@ export function CustomerProfileScreen() {
             <span className="text-[10px] text-[#7A8493]">Preferences &amp; Security</span>
           </Link>
 
-          <Link
-            to="/history"
-            className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-xs hover:bg-white transition flex flex-col items-start gap-1"
-          >
-            <span className="text-xl">🕒</span>
-            <span className="font-poppins text-xs font-bold text-[#0F2044]">Order History</span>
-            <span className="text-[10px] text-[#7A8493]">Past digital receipts</span>
-          </Link>
+          {/* Role-targeted Operational Portal Link */}
+          {user?.role === "CASHIER" ? (
+            <Link
+              to="/cashier"
+              className="rounded-2xl border border-blue-200 bg-blue-50/80 p-4 shadow-xs hover:bg-blue-100/80 transition flex flex-col items-start gap-1"
+            >
+              <span className="text-xl">🧾</span>
+              <span className="font-poppins text-xs font-bold text-blue-900">Cashier Desk</span>
+              <span className="text-[10px] text-blue-700">Settlements &amp; registers</span>
+            </Link>
+          ) : user?.role === "SECURITY_GUARD" ? (
+            <Link
+              to="/security"
+              className="rounded-2xl border border-amber-200 bg-amber-50/80 p-4 shadow-xs hover:bg-amber-100/80 transition flex flex-col items-start gap-1"
+            >
+              <span className="text-xl">🛡️</span>
+              <span className="font-poppins text-xs font-bold text-amber-900">Security Desk</span>
+              <span className="text-[10px] text-amber-700">Turnstile clearance</span>
+            </Link>
+          ) : user?.role === "ADMIN" || user?.role === "STORE_ADMIN" ? (
+            <Link
+              to="/admin"
+              className="rounded-2xl border border-purple-200 bg-purple-50/80 p-4 shadow-xs hover:bg-purple-100/80 transition flex flex-col items-start gap-1"
+            >
+              <span className="text-xl">📊</span>
+              <span className="font-poppins text-xs font-bold text-purple-900">Admin Console</span>
+              <span className="text-[10px] text-purple-700">Store management</span>
+            </Link>
+          ) : (
+            <Link
+              to="/history"
+              className="rounded-2xl border border-white/70 bg-white/90 p-4 shadow-xs hover:bg-white transition flex flex-col items-start gap-1"
+            >
+              <span className="text-xl">🕒</span>
+              <span className="font-poppins text-xs font-bold text-[#0F2044]">Order History</span>
+              <span className="text-[10px] text-[#7A8493]">Past digital receipts</span>
+            </Link>
+          )}
 
           <Link
             to="/settings/password"

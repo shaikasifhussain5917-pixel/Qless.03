@@ -45,7 +45,7 @@ export function NotificationPreferencesScreen() {
     {
       key: "digitalReceipts",
       title: "Digital Receipts & Pass Notifications",
-      description: "Automatic generation of itemized GST digital receipt snapshots upon payment.",
+      description: "Automatic generation of itemized digital receipt snapshots upon payment.",
       icon: "🧾",
     },
     {

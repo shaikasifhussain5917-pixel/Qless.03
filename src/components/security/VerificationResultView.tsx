@@ -426,13 +426,6 @@ export function VerificationResultView({
               </div>
             )}
 
-            {order.taxTotal > 0 && (
-              <div className="flex justify-between text-[#7A8493] text-[11px]">
-                <span>Taxes (CGST + SGST)</span>
-                <span className="font-medium text-[#0F2044]">{fmt(order.taxTotal)}</span>
-              </div>
-            )}
-
             <div className="flex justify-between items-center border-t border-black/10 pt-2 font-poppins">
               <span className="text-sm font-bold text-[#0F2044]">Final Total</span>
               <span className="text-base font-extrabold text-[#0F2044]">{fmt(order.finalTotal)}</span>

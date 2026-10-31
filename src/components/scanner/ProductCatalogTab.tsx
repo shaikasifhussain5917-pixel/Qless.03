@@ -3,7 +3,7 @@ import { Product, ProductCategory, ProductLocation } from "../../types";
 import { PRODUCT_CATEGORIES } from "../../data/mockCatalog";
 import { fmt } from "../../utils/formatters";
 import { useShopping } from "../../context/ShoppingContext";
-import { IcAdd } from "../common/Icons";
+import { IcScan } from "../common/Icons";
 import { ProductImage } from "../common/ProductImage";
 
 interface ProductCatalogTabProps {
@@ -144,14 +144,15 @@ export function ProductCatalogTab({ onSelectProduct, onViewLocation }: ProductCa
                     type="button"
                     onClick={() => onSelectProduct(product)}
                     disabled={isOutOfStock}
-                    className={`flex h-11 items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition shadow-xs ${
+                    aria-label={`Scan barcode to add ${product.name}`}
+                    className={`flex h-11 items-center gap-1.5 rounded-xl px-3.5 text-xs font-bold transition shadow-xs cursor-pointer ${
                       isOutOfStock
                         ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                        : "bg-[#EEF8F0] text-[#2E9E44] hover:bg-[#2E9E44] hover:text-white active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
+                        : "bg-[#EEF8F0] text-[#16A36A] hover:bg-[#16A36A] hover:text-white active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#16A36A]"
                     }`}
                   >
-                    <IcAdd />
-                    <span>Add to Cart</span>
+                    <IcScan />
+                    <span>Scan to Add</span>
                   </button>
                 </div>
               </div>

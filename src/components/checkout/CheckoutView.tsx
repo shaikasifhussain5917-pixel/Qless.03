@@ -11,6 +11,7 @@ import { EmptyState } from "../common/EmptyState";
 import { useShopping } from "../../context/ShoppingContext";
 import { useAuth } from "../../context/AuthContext";
 import { isSupabaseConfigured } from "../../lib/supabase";
+import { StockErrorModal, parseStockError, type StockErrorItem } from "../ui/StockErrorModal";
 import {
   loadRazorpayCheckoutScript,
   createRazorpayOrderServer,
@@ -83,6 +84,28 @@ export function CheckoutView({
   const [processMessage, setProcessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isNetworkTimeout, setIsNetworkTimeout] = useState<boolean>(false);
+  const [stockModalItems, setStockModalItems] = useState<StockErrorItem[] | null>(null);
+
+  /**
+   * Dispatches checkout errors: Insufficient stock errors open the professional StockErrorModal
+   * and suppress the footer alert note. Non-stock errors are shown in the footer note.
+   */
+  const handleCheckoutError = useCallback(
+    (err: string | null | undefined, isNetwork = false) => {
+      if (!err) return;
+      const parsed = parseStockError(err);
+      if (parsed && parsed.length > 0) {
+        setStockModalItems(parsed);
+        setErrorMessage(null);
+        setIsNetworkTimeout(false);
+      } else {
+        setStockModalItems(null);
+        setIsNetworkTimeout(isNetwork);
+        setErrorMessage(err);
+      }
+    },
+    []
+  );
 
   // Retain pending digital order if created in database before gateway completion
   const [pendingDigitalOrder, setPendingDigitalOrder] = useState<CompletedOrder | null>(null);
@@ -185,6 +208,7 @@ export function CheckoutView({
       // 5. Clear stale errors, warnings, and messages relating to previous method
       setErrorMessage(null);
       setIsNetworkTimeout(false);
+      setStockModalItems(null);
       setProcessState("ready");
       setProcessMessage("");
 
@@ -273,7 +297,7 @@ export function CheckoutView({
 
       const cartValidation = validateCartForCheckout(itemsToValidate, appliedCoupon);
       if (!cartValidation.isValid) {
-        setErrorMessage(cartValidation.errors.join(" "));
+        handleCheckoutError(cartValidation.errors.join(" "));
         return;
       }
     }
@@ -323,17 +347,10 @@ export function CheckoutView({
           if (!result.success) {
             isSubmittingRef.current = false;
             setProcessState("failure");
-
-            if (result.isNetworkError) {
-              setIsNetworkTimeout(true);
-              setErrorMessage(
-                result.error ||
-                  "A network timeout occurred while contacting the database. The order status is currently unknown. You can safely retry without creating duplicate orders."
-              );
-            } else {
-              setIsNetworkTimeout(false);
-              setErrorMessage(result.error || "Checkout was declined by the store database.");
-            }
+            handleCheckoutError(
+              result.error || "Checkout was declined by the store database.",
+              result.isNetworkError
+            );
             return;
           }
 
@@ -406,7 +423,10 @@ export function CheckoutView({
           if (!checkoutResult.success || !checkoutResult.order || !checkoutResult.orderId) {
             isSubmittingRef.current = false;
             setProcessState("failure");
-            setErrorMessage(checkoutResult.error || "Checkout was declined by the store database.");
+            handleCheckoutError(
+              checkoutResult.error || "Checkout was declined by the store database.",
+              checkoutResult.isNetworkError
+            );
             return;
           }
           activeOrder = checkoutResult.order;
@@ -806,8 +826,8 @@ export function CheckoutView({
           </div>
         )}
 
-        {/* 5. Error & Failure Alert Card */}
-        {errorMessage && (
+        {/* 5. Error & Failure Alert Card (Non-stock errors only; insufficient stock displays professional modal) */}
+        {errorMessage && !parseStockError(errorMessage) && (
           <div
             role="alert"
             aria-live="polite"
@@ -990,6 +1010,18 @@ export function CheckoutView({
           </div>
         </div>
       )}
+      {/* ── INSUFFICIENT STOCK POPUP MODAL ── */}
+      <StockErrorModal
+        open={Boolean(stockModalItems && stockModalItems.length > 0)}
+        items={stockModalItems || []}
+        onReviewCart={() => {
+          setStockModalItems(null);
+          onBackToCart();
+        }}
+        onClose={() => {
+          setStockModalItems(null);
+        }}
+      />
     </div>
   );
 }

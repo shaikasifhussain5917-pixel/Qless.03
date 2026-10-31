@@ -971,7 +971,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       // ── Development Fallback Mode ──
-      await new Promise((res) => setTimeout(res, 400));
       const res = registerCustomer(data);
       if (res.success && res.user) {
         const sessionObj = createDemoSession(res.user, true);

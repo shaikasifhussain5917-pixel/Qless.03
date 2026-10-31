@@ -662,10 +662,12 @@ export function AdminTransactionsTab({
                   <span>−{fmt(inspectingOrder.couponDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-[#7A8493]">
-                <span>GST Taxes (CGST + SGST)</span>
-                <span>+{fmt(inspectingOrder.taxTotal)}</span>
-              </div>
+              {inspectingOrder.taxTotal > 0 && (
+                <div className="flex justify-between text-[#7A8493]">
+                  <span>Taxes</span>
+                  <span>+{fmt(inspectingOrder.taxTotal)}</span>
+                </div>
+              )}
               <div className="border-t border-black/5 pt-2 flex justify-between font-bold text-sm text-[#0F2044]">
                 <span>Total Paid</span>
                 <span className="text-base text-[#2E9E44]">{fmt(inspectingOrder.finalTotal)}</span>

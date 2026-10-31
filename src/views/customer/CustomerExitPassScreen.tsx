@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getOrderById, createExitQRPayload } from "../../utils/orderStorage";
 import { CustomerLayout } from "../../layouts/CustomerLayout";
 import { fmt } from "../../utils/formatters";
-import { IcBack, IcCheck, IcAlert } from "../../components/common/Icons";
+import { IcBack, IcCheck, IcAlert, IcReceipt } from "../../components/common/Icons";
 import { EmptyState } from "../../components/common/EmptyState";
 import { isSupabaseConfigured } from "../../lib/supabase";
 import {
@@ -266,28 +266,28 @@ export function CustomerExitPassScreen() {
     >
       <div className="flex flex-1 flex-col qless-fade-in pb-12 w-full space-y-4">
         {/* Top Header */}
-        <div className="flex items-center justify-between border-b border-black/5 pb-3">
+        <div className="flex items-center justify-between border-b border-slate-200/80 pb-3">
           <button
             onClick={() => navigate(order?.orderId ? `/receipt/${order.orderId}` : "/shop")}
-            className="flex items-center gap-1.5 text-xs font-semibold text-[#7A8493] transition hover:text-[#0F2044]"
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#667085] transition hover:text-[#101828]"
           >
             <IcBack />
             <span>Digital Receipt</span>
           </button>
 
           {isPending ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-3 py-1 text-xs font-bold text-amber-800 shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-bold text-amber-800 shadow-2xs">
               <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse" />
               <span>Pass Locked · Payment Pending</span>
             </span>
           ) : isRetrievingPass ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-300 px-3 py-1 text-xs font-bold text-blue-800 shadow-2xs">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 border border-blue-200 px-3 py-1 text-xs font-bold text-blue-800 shadow-2xs">
               <span className="h-2 w-2 rounded-full bg-blue-500 animate-pulse" />
               <span>Payment Confirmed · Issuing Gate Pass</span>
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#EEF8F0] border border-emerald-300 px-3 py-1 text-xs font-bold text-[#2E9E44] shadow-2xs">
-              <span className="h-2 w-2 rounded-full bg-[#2E9E44] animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-bold text-[#16A36A] shadow-2xs">
+              <span className="h-2 w-2 rounded-full bg-[#16A36A] animate-pulse" />
               <span>Pass Active · Ready for Turnstile Gate</span>
             </span>
           )}
@@ -311,7 +311,7 @@ export function CustomerExitPassScreen() {
             <button
               type="button"
               onClick={() => syncOrderAndPass(true)}
-              className="rounded-lg bg-red-800 px-3 py-1.5 text-[11px] font-bold text-white shrink-0 hover:bg-red-900 active:scale-95 transition"
+              className="rounded-lg bg-red-700 px-3 py-1.5 text-[11px] font-bold text-white shrink-0 hover:bg-red-800 active:scale-95 transition cursor-pointer"
             >
               Retry Sync
             </button>
@@ -319,20 +319,20 @@ export function CustomerExitPassScreen() {
         )}
 
         {/* Customer Exit Pass Card */}
-        <div className="rounded-3xl border border-white/70 bg-white/95 p-6 shadow-[0_12px_36px_rgba(15,32,68,0.10)] backdrop-blur-md text-center space-y-5">
+        <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-xs text-center space-y-5">
           {/* Store Identification */}
           <div>
             <div className="flex items-center justify-center gap-2">
               <span
                 className="inline-block h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: order?.store?.brandColor || "#2E9E44" }}
+                style={{ backgroundColor: order?.store?.brandColor || "#16A36A" }}
               />
-              <h2 className="font-poppins text-lg font-bold text-[#0F2044]">
+              <h2 className="font-poppins text-lg font-bold text-[#101828]">
                 {order?.store?.name || "QLess Mart"}
               </h2>
             </div>
-            <p className="text-xs text-[#7A8493]">
-              {order?.store?.branch || "Indiranagar Branch"} · Automated Gate Pass
+            <p className="text-xs text-[#667085]">
+              {order?.store?.branch || "Self-Checkout"} · Automated Gate Pass
             </p>
           </div>
 
@@ -343,7 +343,7 @@ export function CustomerExitPassScreen() {
               <div className="h-16 w-16 rounded-2xl bg-amber-100 border border-amber-200 flex items-center justify-center text-3xl shadow-xs">
                 🔒
               </div>
-              <h3 className="mt-3 font-poppins text-sm font-bold text-[#0F2044]">
+              <h3 className="mt-3 font-poppins text-sm font-bold text-[#101828]">
                 Exit Gate Pass Locked
               </h3>
               <p className="mt-1 text-xs text-amber-900 leading-relaxed font-medium">
@@ -355,10 +355,10 @@ export function CustomerExitPassScreen() {
 
               {/* Order Reference Box */}
               <div className="mt-4 rounded-xl bg-white px-4 py-2.5 border border-amber-200 shadow-2xs w-full">
-                <span className="text-[10px] font-bold text-[#7A8493] uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-[#667085] uppercase tracking-wider block">
                   Order Reference for Cashier
                 </span>
-                <span className="font-mono text-sm font-bold text-[#0F2044] select-all">
+                <span className="font-mono text-sm font-bold text-[#101828] select-all">
                   {order?.orderId}
                 </span>
               </div>
@@ -373,7 +373,7 @@ export function CustomerExitPassScreen() {
                 type="button"
                 onClick={() => syncOrderAndPass(true)}
                 disabled={isSyncing}
-                className="mt-2.5 text-[11px] font-bold text-amber-900 underline hover:text-amber-950 disabled:opacity-50"
+                className="mt-2.5 text-[11px] font-bold text-amber-900 underline hover:text-amber-950 disabled:opacity-50 cursor-pointer"
               >
                 {isSyncing ? "Checking database…" : "Refresh Status Now"}
               </button>
@@ -399,26 +399,26 @@ export function CustomerExitPassScreen() {
             </div>
           ) : isExitPassValid && finalQrPayload ? (
             /* STATE C: CONFIRMED & VALID DATABASE EXIT QR */
-            <div className="mx-auto flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/40 p-3.5 sm:p-5 max-w-[260px] sm:max-w-[280px] shadow-inner qless-scale-in">
-              <div className="bg-white p-2.5 sm:p-3 rounded-2xl shadow-md border border-emerald-200">
+            <div className="mx-auto flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/40 p-4 sm:p-5 max-w-[280px] shadow-inner qless-scale-in">
+              <div className="bg-white p-3 rounded-2xl shadow-sm border border-slate-200/80">
                 <QRCodeSVG
                   value={finalQrPayload}
-                  size={180}
+                  size={190}
                   level="M"
                   includeMargin={false}
-                  fgColor="#0F2044"
+                  fgColor="#101828"
                 />
               </div>
 
-              <div className="mt-3 flex items-center gap-1.5 text-[#2E9E44] font-bold text-xs">
+              <div className="mt-3 flex items-center gap-1.5 text-[#16A36A] font-bold text-xs">
                 <IcCheck />
                 <span>Turnstile Gate Pass Active</span>
               </div>
 
-              <p className="mt-1 font-mono text-[11px] font-bold text-[#0F2044] tracking-wider select-all">
+              <p className="mt-1 font-mono text-[11px] font-bold text-[#101828] tracking-wider select-all">
                 {order?.orderId}
               </p>
-              <p className="text-[10.5px] text-[#7A8493] mt-0.5">
+              <p className="text-[10.5px] text-[#667085] mt-0.5">
                 Present screen face-up to the turnstile sensor
               </p>
             </div>
@@ -439,7 +439,7 @@ export function CustomerExitPassScreen() {
               <button
                 type="button"
                 onClick={() => syncOrderAndPass(true)}
-                className="mt-3 rounded-xl bg-red-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-800 transition"
+                className="mt-3 rounded-xl bg-red-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-red-800 transition cursor-pointer"
               >
                 Retry Fetch
               </button>
@@ -447,42 +447,42 @@ export function CustomerExitPassScreen() {
           )}
 
           {/* Pass Details Breakdown */}
-          <div className="rounded-2xl border border-black/5 bg-[#F8F9FA] p-3.5 text-xs text-left grid grid-cols-2 gap-2.5">
+          <div className="rounded-2xl border border-slate-100 bg-slate-50/80 p-4 text-xs text-left grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">
                 Item Count
               </p>
-              <p className="font-semibold text-[#0F2044]">{order?.itemCount ?? 0} items</p>
+              <p className="font-bold text-[#101828]">{order?.itemCount ?? 0} items</p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">
                 {isPending ? "Amount Due" : "Amount Paid"}
               </p>
-              <p className={`font-semibold ${isPending ? "text-amber-700" : "text-[#2E9E44]"}`}>
+              <p className={`font-bold ${isPending ? "text-amber-700" : "text-[#16A36A]"}`}>
                 {fmt(order?.finalTotal ?? 0)}
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">
                 Pass Issued At
               </p>
-              <p className="font-semibold text-[#0F2044]">
+              <p className="font-semibold text-[#101828]">
                 {isPending ? "Pending Payment" : issueDisplay}
               </p>
             </div>
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">
                 Pass Valid Until
               </p>
-              <p className="font-semibold text-[#0F2044]">
+              <p className="font-semibold text-[#101828]">
                 {isPending ? "Pending Payment" : expiryDisplay}
               </p>
             </div>
-            <div className="col-span-2 flex items-center justify-between border-t border-black/5 pt-2">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3]">
+            <div className="col-span-2 flex items-center justify-between border-t border-slate-200/60 pt-2.5">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">
                 Payment Status
               </span>
-              <span className={`font-bold ${isPending ? "text-amber-700" : "text-[#2E9E44]"}`}>
+              <span className={`font-bold ${isPending ? "text-amber-700" : "text-[#16A36A]"}`}>
                 {isPending
                   ? (order?.paymentMethod === "cash"
                       ? "Pending Cashier Payment"
@@ -494,7 +494,7 @@ export function CustomerExitPassScreen() {
 
           {/* Authoritative Security Gate Notice */}
           {isPending ? (
-            <div className="rounded-xl border border-amber-300 bg-amber-50/90 p-3 text-[11px] text-amber-900 text-left leading-relaxed">
+            <div className="rounded-2xl border border-amber-200 bg-amber-50/90 p-3.5 text-[11px] text-amber-900 text-left leading-relaxed">
               <p className="font-bold flex items-center gap-1.5">
                 <span>🛡️</span> Turnstile Gate Protection Active
               </p>
@@ -503,7 +503,7 @@ export function CustomerExitPassScreen() {
               </p>
             </div>
           ) : (
-            <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-3 text-[11px] text-emerald-900 text-left leading-relaxed">
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/80 p-3.5 text-[11px] text-emerald-900 text-left leading-relaxed">
               <p className="font-bold flex items-center gap-1.5">
                 <span>🛡️</span> Database Verified Gate Clearance
               </p>
@@ -514,7 +514,7 @@ export function CustomerExitPassScreen() {
           )}
 
           {lastSyncedAt && (
-            <p className="text-[10px] text-[#8A94A3]">
+            <p className="text-[10px] text-[#667085]">
               Last verified with store database at {lastSyncedAt}
             </p>
           )}
@@ -526,9 +526,9 @@ export function CustomerExitPassScreen() {
           <button
             type="button"
             onClick={() => navigate(order?.orderId ? `/receipt/${order.orderId}` : "/shop")}
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0F2044] font-poppins text-xs font-semibold text-white shadow-md transition hover:bg-[#1A3163] active:scale-98"
+            className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#101828] font-poppins text-xs font-semibold text-white shadow-sm transition hover:bg-slate-800 active:scale-98 cursor-pointer"
           >
-            <span>🧾</span>
+            <IcReceipt />
             <span>View Full Itemised Receipt</span>
           </button>
 
@@ -536,7 +536,7 @@ export function CustomerExitPassScreen() {
           <button
             type="button"
             onClick={() => navigate("/history")}
-            className="flex h-10 w-full items-center justify-center text-xs font-semibold text-[#7A8493] hover:text-[#0F2044] hover:underline transition"
+            className="flex h-10 w-full items-center justify-center text-xs font-semibold text-[#667085] hover:text-[#101828] hover:underline transition cursor-pointer"
           >
             View All Order History
           </button>

@@ -66,24 +66,24 @@ export function ProductConfirmationModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#0F2044]/45 px-0 sm:px-4 backdrop-blur-sm qless-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#0F2044]/50 px-0 sm:px-4 backdrop-blur-xs qless-fade-in"
       onMouseDown={onCancel}
     >
       <div
-        className="w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl bg-white p-4 sm:p-6 shadow-[0_-16px_60px_rgba(15,32,68,0.25)] sm:shadow-[0_24px_70px_rgba(15,32,68,0.2)] qless-scale-in"
+        className="w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl bg-white p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom,0px))] shadow-[0_-16px_60px_rgba(15,32,68,0.25)] sm:shadow-[0_24px_70px_rgba(15,32,68,0.2)] qless-bottom-sheet sm:qless-scale-in"
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="confirm-product-title"
         aria-modal="true"
       >
         {/* Mobile top handle */}
-        <div className="flex justify-center pb-2 sm:hidden">
-          <div className="h-1 w-10 rounded-full bg-[#E5E7EB]" />
+        <div className="flex justify-center pb-2.5 sm:hidden">
+          <div className="h-1.5 w-12 rounded-full bg-slate-200" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-black/5">
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <div className="flex items-center justify-between pb-2.5 sm:pb-3 border-b border-black/5 gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap min-w-0 flex-1 mr-1">
             <span className="rounded-full bg-[#EEF8F0] px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-[#2E9E44]">
               {sourceLabel}
             </span>
@@ -100,7 +100,7 @@ export function ProductConfirmationModal({
           <button
             onClick={onCancel}
             aria-label="Close confirmation"
-            className="flex min-h-[44px] min-w-[44px] h-11 w-11 items-center justify-center rounded-xl text-[#7A8493] hover:bg-[#F6F7F8] hover:text-[#0F2044] transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-400"
+            className="flex min-h-[44px] min-w-[44px] h-11 w-11 shrink-0 items-center justify-center rounded-xl text-[#7A8493] hover:bg-[#F6F7F8] hover:text-[#0F2044] transition focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-slate-400 cursor-pointer"
           >
             <IcClose />
           </button>
@@ -150,7 +150,7 @@ export function ProductConfirmationModal({
 
           {/* Barcode Tag */}
           <div className="mt-3.5 flex items-center justify-between rounded-xl bg-[#F9FAFB] border border-black/5 px-3 py-2 text-xs">
-            <span className="text-[#7A8493] font-alegreya">Barcode</span>
+            <span className="text-[#7A8493]">Barcode</span>
             <span className="font-mono font-semibold text-[#0F2044] tracking-wider">
               {product.barcode}
             </span>
@@ -234,7 +234,7 @@ export function ProductConfirmationModal({
             type="button"
             onClick={handleAdd}
             disabled={isOutOfStock}
-            className="flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#2E9E44] font-poppins text-sm font-bold text-white shadow-[0_8px_20px_rgba(46,158,68,0.25)] transition hover:scale-[1.01] hover:bg-[#288B3B] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-gray-400 disabled:opacity-60 disabled:hover:scale-100 disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
+            className="flex min-h-[48px] h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#16A36A] font-poppins text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-[#15803d] active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-slate-300 disabled:opacity-60 disabled:hover:scale-100 disabled:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A]"
           >
             {isOutOfStock ? (
               <span>Out of Stock — Cannot Add</span>
@@ -249,7 +249,7 @@ export function ProductConfirmationModal({
           <button
             type="button"
             onClick={onCancel}
-            className="flex h-11 w-full items-center justify-center rounded-xl border border-[#D8DDE3] bg-white font-poppins text-xs font-semibold text-[#7A8493] transition hover:bg-[#F8F9FA] hover:text-[#0F2044] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+            className="flex min-h-[44px] h-11 w-full items-center justify-center rounded-xl border border-slate-200 bg-white font-poppins text-xs font-semibold text-[#667085] transition hover:bg-slate-50 hover:text-[#101828] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
           >
             Cancel / Scan Another Product
           </button>

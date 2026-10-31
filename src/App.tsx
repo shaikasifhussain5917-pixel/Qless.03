@@ -77,11 +77,11 @@ export default function App() {
                 }
               />
 
-              {/* Protected Customer Account & History Routes */}
+              {/* Protected User Account & History Routes (Accessible by all verified roles) */}
               <Route
                 path="/profile"
                 element={
-                  <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <ProtectedRoute allowedRoles={["CUSTOMER", "CASHIER", "STORE_ADMIN", "ADMIN", "SECURITY_GUARD"]}>
                     <CustomerProfileScreen />
                   </ProtectedRoute>
                 }
@@ -89,7 +89,7 @@ export default function App() {
               <Route
                 path="/settings"
                 element={
-                  <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <ProtectedRoute allowedRoles={["CUSTOMER", "CASHIER", "STORE_ADMIN", "ADMIN", "SECURITY_GUARD"]}>
                     <AccountSettingsScreen />
                   </ProtectedRoute>
                 }
@@ -97,7 +97,7 @@ export default function App() {
               <Route
                 path="/settings/password"
                 element={
-                  <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <ProtectedRoute allowedRoles={["CUSTOMER", "CASHIER", "STORE_ADMIN", "ADMIN", "SECURITY_GUARD"]}>
                     <ChangePasswordScreen />
                   </ProtectedRoute>
                 }
@@ -105,7 +105,7 @@ export default function App() {
               <Route
                 path="/settings/notifications"
                 element={
-                  <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <ProtectedRoute allowedRoles={["CUSTOMER", "CASHIER", "STORE_ADMIN", "ADMIN", "SECURITY_GUARD"]}>
                     <NotificationPreferencesScreen />
                   </ProtectedRoute>
                 }
@@ -113,7 +113,7 @@ export default function App() {
               <Route
                 path="/history"
                 element={
-                  <ProtectedRoute allowedRoles={["CUSTOMER"]}>
+                  <ProtectedRoute allowedRoles={["CUSTOMER", "CASHIER", "STORE_ADMIN", "ADMIN", "SECURITY_GUARD"]}>
                     <ShoppingHistoryScreen />
                   </ProtectedRoute>
                 }

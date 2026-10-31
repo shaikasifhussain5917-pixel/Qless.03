@@ -128,13 +128,13 @@ export function PaymentSuccessView({
         {/* Bill Breakdown Summary */}
         <div className="border-t border-black/5 pt-3 space-y-1.5 text-xs">
           <div className="flex justify-between text-[#7A8493]">
-            <span>Subtotal</span>
+            <span>Items Subtotal</span>
             <span>{fmt(order.subtotal)}</span>
           </div>
           {order.mrpSavings > 0 && (
-            <div className="flex justify-between text-[#2E9E44]">
+            <div className="flex justify-between text-[#2E9E44] text-[11px] font-medium bg-emerald-50 px-2 py-1 rounded-lg">
               <span>Store MRP Savings</span>
-              <span>−{fmt(order.mrpSavings)}</span>
+              <span>Saved {fmt(order.mrpSavings)}</span>
             </div>
           )}
           {order.couponDiscount > 0 && (
@@ -143,10 +143,6 @@ export function PaymentSuccessView({
               <span>−{fmt(order.couponDiscount)}</span>
             </div>
           )}
-          <div className="flex justify-between text-[#7A8493]">
-            <span>GST (5%)</span>
-            <span>+{fmt(order.taxTotal)}</span>
-          </div>
           <div className="border-t border-black/5 pt-2 flex justify-between font-bold text-sm text-[#0F2044]">
             <span>{isPending ? "Amount Due (Pending)" : "Amount Paid"}</span>
             <span className={`text-base ${isPending ? "text-amber-800" : "text-[#2E9E44]"}`}>

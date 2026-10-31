@@ -215,7 +215,19 @@ export async function lookupProductByBarcodeLive(
     return { status: "not_found", error: "Barcode cannot be empty" };
   }
 
-  // 1. If Supabase is configured, execute live authoritative query
+  // 1. Fast-path: check in-memory cached catalog first for instant 0ms resolution
+  if (cachedCatalog && cachedCatalog.storeId === storeId && cachedCatalog.products.length > 0) {
+    const found = cachedCatalog.products.find((p) => p.barcode?.trim() === clean);
+    if (found) {
+      const inStock = found.isAvailable !== false && (found.stockQuantity === undefined || found.stockQuantity > 0);
+      return {
+        status: inStock ? "found_in_stock" : "found_out_of_stock",
+        product: found,
+      };
+    }
+  }
+
+  // 2. If Supabase is configured, execute live authoritative query
   if (isSupabaseConfigured && supabase) {
     try {
       let data: any = null;

@@ -186,7 +186,7 @@ export async function fetchPendingCashOrders(
 }
 
 /**
- * Searches the pending orders in memory by order ID, receipt ID, or session ID.
+ * Searches the pending orders in memory by order ID, receipt ID, session ID, or purchased product names/barcodes.
  */
 export function searchPendingCashOrders(
   orders: CashierPendingOrder[],
@@ -199,7 +199,13 @@ export function searchPendingCashOrders(
     (o) =>
       o.id.toLowerCase().includes(q) ||
       o.receiptId.toLowerCase().includes(q) ||
-      o.sessionId.toLowerCase().includes(q)
+      o.sessionId.toLowerCase().includes(q) ||
+      (o.items &&
+        o.items.some(
+          (item) =>
+            item.productName.toLowerCase().includes(q) ||
+            item.barcode.toLowerCase().includes(q)
+        ))
   );
 }
 

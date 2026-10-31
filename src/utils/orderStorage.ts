@@ -154,7 +154,7 @@ export function formatReceiptText(order: CompletedOrder): string {
   let out = "";
   out += `${line}\n`;
   out += `          QLESS SMART SELF-CHECKOUT\n`;
-  out += `         OFFICIAL TAX INVOICE RECEIPT\n`;
+  out += `           OFFICIAL DIGITAL RECEIPT\n`;
   out += `${line}\n`;
   out += `Store:      ${order.store?.name || "Supermarket"}\n`;
   out += `Branch:     ${order.store?.branch || "Self-Checkout Bay"}\n`;
@@ -182,9 +182,6 @@ export function formatReceiptText(order: CompletedOrder): string {
   if (order.couponDiscount > 0) {
     out += `Coupon (${order.couponCode || "DISC"}):   -${fmt(order.couponDiscount)}\n`;
   }
-  out += `Demo CGST (2.5%):       +${fmt(order.cgst)}\n`;
-  out += `Demo SGST (2.5%):       +${fmt(order.sgst)}\n`;
-  out += `Total Tax (5% Demo):    +${fmt(order.taxTotal)}\n`;
   out += `${divider}\n`;
   out += `FINAL AMOUNT PAID:       ${fmt(order.finalTotal)}\n`;
   out += `${line}\n`;

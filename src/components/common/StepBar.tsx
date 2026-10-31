@@ -5,7 +5,7 @@ const STEPS = [
   { id: 0, label: "Cart" },
   { id: 1, label: "Review" },
   { id: 2, label: "Payment" },
-  { id: 3, label: "Receipt" },
+  { id: 3, label: "Pass" },
 ];
 
 export function StepBar({ current }: { current: AppView }) {
@@ -21,38 +21,54 @@ export function StepBar({ current }: { current: AppView }) {
   }
 
   return (
-    <div className="flex items-center justify-center gap-0 py-3 sm:py-4 select-none">
-      {STEPS.map((step, i) => (
-        <div key={step.id} className="flex items-center">
-          <div className="flex flex-col items-center gap-1">
-            <div
-              className={`flex h-6.5 w-6.5 sm:h-7 sm:w-7 items-center justify-center rounded-full text-xs font-bold transition-all duration-300 ${
-                i < activeIndex
-                  ? "bg-[#2E9E44] text-white"
-                  : i === activeIndex
-                  ? "bg-[#0F2044] text-white shadow-[0_4px_12px_rgba(15,32,68,0.22)]"
-                  : "bg-[#E5E7EB] text-[#9AA3AF]"
-              }`}
-            >
-              {i < activeIndex ? <IcCheck /> : i + 1}
+    <nav
+      aria-label="Checkout Progress"
+      className="w-full max-w-[420px] mx-auto py-2.5 mb-3 select-none"
+    >
+      <ol className="flex items-center justify-between w-full">
+        {STEPS.map((step, i) => (
+          <li
+            key={step.id}
+            className="flex-1 flex items-center last:flex-none"
+          >
+            <div className="flex flex-col items-center">
+              <div
+                className={`flex h-6 w-6 sm:h-7 sm:w-7 items-center justify-center rounded-full text-[11px] sm:text-xs font-bold transition-all duration-200 shrink-0 ${
+                  i < activeIndex
+                    ? "bg-[#16A36A] text-white shadow-2xs"
+                    : i === activeIndex
+                    ? "bg-[#101828] text-white shadow-sm ring-2 ring-slate-900/10"
+                    : "bg-slate-100 text-slate-400 border border-slate-200/80"
+                }`}
+                aria-current={i === activeIndex ? "step" : undefined}
+              >
+                {i < activeIndex ? (
+                  <span className="flex h-3.5 w-3.5 items-center justify-center">
+                    <IcCheck />
+                  </span>
+                ) : (
+                  i + 1
+                )}
+              </div>
+              <span
+                className={`text-[10px] sm:text-[11px] font-semibold tracking-tight mt-1 text-center transition-colors ${
+                  i <= activeIndex ? "text-[#101828]" : "text-slate-400"
+                }`}
+              >
+                {step.label}
+              </span>
             </div>
-            <span
-              className={`text-[9px] sm:text-[10px] font-semibold tracking-wide ${
-                i <= activeIndex ? "text-[#0F2044]" : "text-[#9AA3AF]"
-              }`}
-            >
-              {step.label}
-            </span>
-          </div>
-          {i < STEPS.length - 1 && (
-            <div
-              className={`mb-4 mx-1 sm:mx-1.5 h-px w-6 sm:w-10 transition-all duration-300 ${
-                i < activeIndex ? "bg-[#2E9E44]" : "bg-[#E5E7EB]"
-              }`}
-            />
-          )}
-        </div>
-      ))}
-    </div>
+            {i < STEPS.length - 1 && (
+              <div
+                className={`flex-1 h-[2px] mx-1.5 sm:mx-3 -mt-4 transition-all duration-300 rounded-full ${
+                  i < activeIndex ? "bg-[#16A36A]" : "bg-slate-200"
+                }`}
+                aria-hidden="true"
+              />
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
   );
 }

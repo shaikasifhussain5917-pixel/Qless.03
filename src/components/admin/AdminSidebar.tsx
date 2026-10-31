@@ -1,6 +1,18 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AdminTab, SupermarketStore } from "../../types";
 import { useAuth } from "../../context/AuthContext";
+import {
+  IcDashboard,
+  IcTag,
+  IcBox,
+  IcUpload,
+  IcMapPin,
+  IcReceipt,
+  IcShield,
+  IcDoor,
+  IcLogout,
+} from "../common/Icons";
 
 interface AdminSidebarProps {
   currentTab: AdminTab;
@@ -16,7 +28,7 @@ interface AdminSidebarProps {
 interface NavItem {
   id: AdminTab;
   label: string;
-  icon: string;
+  icon: React.ReactNode;
   badge?: number;
   badgeColor?: string;
 }
@@ -39,22 +51,22 @@ export function AdminSidebar({
     {
       title: "OVERVIEW",
       items: [
-        { id: "overview", label: "Dashboard", icon: "📊" },
+        { id: "overview", label: "Dashboard", icon: <IcDashboard className="h-4 w-4" /> },
       ],
     },
     {
       title: "INVENTORY",
       items: [
-        { id: "products", label: "Products Catalog", icon: "🏷️" },
+        { id: "products", label: "Products Catalog", icon: <IcTag className="h-4 w-4" /> },
         {
           id: "inventory",
           label: "Stock & Inventory",
-          icon: "📦",
+          icon: <IcBox className="h-4 w-4" />,
           badge: lowStockCount > 0 ? lowStockCount : undefined,
           badgeColor: "bg-amber-500 text-white",
         },
-        { id: "stock-import", label: "Smart Stock Intake", icon: "📥" },
-        { id: "locations", label: "Rack & Locations", icon: "📍" },
+        { id: "stock-import", label: "Smart Stock Intake", icon: <IcUpload className="h-4 w-4" /> },
+        { id: "locations", label: "Rack & Locations", icon: <IcMapPin className="h-4 w-4" /> },
       ],
     },
     {
@@ -63,18 +75,18 @@ export function AdminSidebar({
         {
           id: "transactions",
           label: "Orders & Sales",
-          icon: "🧾",
+          icon: <IcReceipt className="h-4 w-4" />,
           badge: totalOrdersCount > 0 ? totalOrdersCount : undefined,
-          badgeColor: "bg-[#0F2044] text-white",
+          badgeColor: "bg-[#101828] text-white",
         },
         {
           id: "security",
           label: "Security Audit",
-          icon: "🛡️",
+          icon: <IcShield />,
           badge: unresolvedDiscrepanciesCount > 0 ? unresolvedDiscrepanciesCount : undefined,
           badgeColor: "bg-red-500 text-white",
         },
-        { id: "gate-qr", label: "Gate Turnstile QR", icon: "🚪" },
+        { id: "gate-qr", label: "Gate Turnstile QR", icon: <IcDoor className="h-4 w-4" /> },
       ],
     },
   ];
@@ -86,14 +98,14 @@ export function AdminSidebar({
         <div className="border-b border-slate-100 pb-3.5">
           <div className="flex items-center justify-between gap-2.5 mb-2.5">
             <div className="flex items-center gap-2.5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#0F2044] text-white font-bold text-sm shadow-2xs">
+              <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#101828] text-white font-bold text-sm shadow-xs">
                 Q
               </span>
               <div>
-                <p className="font-poppins text-sm font-extrabold text-[#0F2044] leading-tight tracking-tight">
+                <p className="font-poppins text-sm font-bold text-slate-900 leading-tight tracking-tight">
                   QLess Admin
                 </p>
-                <p className="text-[10px] font-semibold text-[#2E9E44] uppercase tracking-wider">
+                <p className="text-[10px] font-semibold text-emerald-600 uppercase tracking-wider">
                   Supermarket Console
                 </p>
               </div>
@@ -112,16 +124,16 @@ export function AdminSidebar({
           </div>
 
           {/* Store Selector Pill */}
-          <div className="rounded-xl bg-slate-50/80 p-2.5 border border-slate-200/60 text-[11px]">
+          <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-200/80 text-[11px]">
             <div className="flex items-center justify-between mb-0.5">
-              <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-wider block">
+              <span className="text-[9.5px] font-semibold text-slate-400 uppercase tracking-wider block">
                 Active Branch
               </span>
-              <span className="text-[9px] font-mono font-bold bg-[#0F2044] text-white px-1.5 py-0.2 rounded">
+              <span className="text-[9px] font-mono font-bold bg-[#101828] text-white px-1.5 py-0.5 rounded">
                 {selectedStore?.code || "STORE001"}
               </span>
             </div>
-            <p className="font-bold text-[#0F2044] truncate">
+            <p className="font-semibold text-slate-900 truncate">
               {selectedStore?.name || "QLess Mart"}
             </p>
             <p className="text-[10px] text-slate-500 truncate">
@@ -153,19 +165,19 @@ export function AdminSidebar({
                     }}
                     className={`flex w-full items-center justify-between rounded-xl px-2.5 py-2 font-poppins text-xs transition cursor-pointer min-h-[36px] ${
                       active
-                        ? "bg-[#0F2044] text-white font-bold shadow-xs"
-                        : "text-slate-600 font-medium hover:bg-slate-50 hover:text-[#0F2044]"
+                        ? "bg-[#101828] text-white font-semibold shadow-xs"
+                        : "text-slate-600 font-medium hover:bg-slate-100 hover:text-slate-900"
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <span className="text-sm shrink-0">{item.icon}</span>
+                      <span className={`shrink-0 ${active ? "text-emerald-400" : "text-slate-400"}`}>{item.icon}</span>
                       <span className="truncate">{item.label}</span>
                     </div>
                     {item.badge !== undefined && (
                       <span
                         className={`rounded-full px-1.5 py-0.2 text-[9px] font-bold shrink-0 ${
                           active
-                            ? "bg-white text-[#0F2044]"
+                            ? "bg-white text-slate-900"
                             : item.badgeColor || "bg-slate-100 text-slate-700"
                         }`}
                       >
@@ -182,13 +194,13 @@ export function AdminSidebar({
 
       {/* Admin Session & Bottom Utilities */}
       <div className="border-t border-slate-100 pt-3 space-y-2 shrink-0">
-        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2 border border-slate-200/60">
+        <div className="flex items-center justify-between rounded-xl bg-slate-50 p-2 border border-slate-200/80">
           <div className="flex items-center gap-2 min-w-0">
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#0F2044] text-[10px] font-bold text-white shadow-2xs">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#101828] text-[10px] font-bold text-white shadow-2xs">
               {user?.avatarInitials || "AD"}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-xs font-bold text-[#0F2044]">
+              <p className="truncate text-xs font-semibold text-slate-900">
                 {user?.name || "Store Admin"}
               </p>
               <p className="text-[9.5px] text-slate-400 leading-none">
@@ -202,10 +214,11 @@ export function AdminSidebar({
               logout();
               navigate("/auth/admin");
             }}
-            className="text-[10px] font-bold text-red-600 hover:text-red-700 px-2.5 py-1.5 rounded-md hover:bg-red-50 transition cursor-pointer min-h-[30px]"
+            className="flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700 px-2 py-1.5 rounded-lg hover:bg-red-50 transition cursor-pointer"
             title="Sign out of Admin Portal"
           >
-            Sign Out
+            <IcLogout className="h-3.5 w-3.5" />
+            <span>Sign Out</span>
           </button>
         </div>
       </div>

@@ -102,7 +102,12 @@ export function AccountSettingsScreen() {
       maxWidthClass="max-w-[480px]"
       showCustomerNav={true}
       activeNav="profile"
-      onBack={() => navigate(-1)}
+      onBack={() => {
+        if (user?.role === "CASHIER" || user?.email?.toLowerCase().includes("cashier")) navigate("/cashier");
+        else if (user?.role === "ADMIN" || user?.role === "STORE_ADMIN" || user?.email?.toLowerCase().includes("admin")) navigate("/admin");
+        else if (user?.role === "SECURITY_GUARD" || user?.email?.toLowerCase().includes("guard")) navigate("/security");
+        else navigate("/profile");
+      }}
       backLabel="Back"
     >
       <div className="space-y-4 pb-12 qless-fade-in">
@@ -335,22 +340,24 @@ export function AccountSettingsScreen() {
             <button
               type="button"
               onClick={handleSignOut}
-              className="w-full rounded-2xl border border-black/10 bg-white py-3 text-xs font-bold text-[#0F2044] hover:bg-black/5 transition shadow-2xs"
+              className="w-full rounded-2xl border border-black/10 bg-white py-3 text-xs font-bold text-[#0F2044] hover:bg-black/5 transition shadow-2xs cursor-pointer"
             >
               Sign Out of Session
             </button>
 
-            <button
-              type="button"
-              onClick={() => {
-                setDeleteConfirmationText("");
-                setDeleteError("");
-                setIsDeleteModalOpen(true);
-              }}
-              className="w-full rounded-2xl border border-red-300 bg-red-100 py-3 text-xs font-bold text-red-700 hover:bg-red-200 transition"
-            >
-              Delete Shopper Account (Demo)
-            </button>
+            {(!user || user.role === "CUSTOMER") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setDeleteConfirmationText("");
+                  setDeleteError("");
+                  setIsDeleteModalOpen(true);
+                }}
+                className="w-full rounded-2xl border border-red-300 bg-red-100 py-3 text-xs font-bold text-red-700 hover:bg-red-200 transition cursor-pointer"
+              >
+                Delete Shopper Account (Demo)
+              </button>
+            )}
           </div>
         </div>
 

@@ -140,17 +140,16 @@ export function calculateBill(rawItems: CartItem[], coupon: Coupon | null): Bill
   // Cap discount to subtotal
   couponDiscount = Math.min(couponDiscount, subtotal);
 
-  // Net taxable merchandise
+  // Net payable merchandise
   const taxableAmount = Math.max(0, subtotal - couponDiscount);
 
-  // Clearly documented Mock GST rate (5% Grocery Tax: 2.5% CGST + 2.5% SGST)
-  // Demo tax rate for supermarket self-checkout simulation
-  const cgst = Math.round(taxableAmount * 0.025 * 100) / 100;
-  const sgst = Math.round(taxableAmount * 0.025 * 100) / 100;
-  const taxTotal = Math.round((cgst + sgst) * 100) / 100;
+  // Zero GST policy: Prices are all-inclusive; no added GST tax surcharge
+  const cgst = 0;
+  const sgst = 0;
+  const taxTotal = 0;
 
-  // Final payable total
-  const finalTotal = Math.max(0, Math.round((taxableAmount + taxTotal) * 100) / 100);
+  // Final payable total equals net merchandise total
+  const finalTotal = taxableAmount;
 
   return {
     items,

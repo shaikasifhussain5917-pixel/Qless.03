@@ -2,6 +2,17 @@ import { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useShopping } from "../context/ShoppingContext";
 import { useAuth } from "../context/AuthContext";
+import {
+  IcBack,
+  IcCart,
+  IcScan,
+  IcSearch,
+  IcHistory,
+  IcUser,
+  IcSettings,
+  IcLogout,
+  IcShield,
+} from "../components/common/Icons";
 
 interface CustomerLayoutProps {
   children: ReactNode;
@@ -20,7 +31,7 @@ export function CustomerLayout({
   children,
   showHeader = true,
   showFooter = true,
-  maxWidthClass = "max-w-[420px]",
+  maxWidthClass = "max-w-[440px]",
   onBack,
   backLabel,
   showCustomerNav = false,
@@ -33,79 +44,147 @@ export function CustomerLayout({
   const { user, isAuthenticated, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  return (
-    <main
-      className="relative min-h-screen px-3 py-4 sm:px-6 sm:py-6 text-[#0F2044] antialiased qless-app-bg"
-      style={{ backgroundImage: `url('/images/qless-bg.jpg')` }}
-    >
-      {/* Soft glassmorphism overlay to preserve contrast over background photo */}
-      <div
-        className="pointer-events-none fixed inset-0 z-0 bg-gradient-to-b from-white/80 via-white/65 to-white/80 backdrop-blur-[2px]"
-        aria-hidden="true"
-      />
+  const isStaff = Boolean(
+    user &&
+    (user.role === "CASHIER" ||
+      user.role === "STORE_ADMIN" ||
+      user.role === "ADMIN" ||
+      user.role === "SECURITY_GUARD" ||
+      (user.role as string)?.toUpperCase() === "CASHIER" ||
+      (user.role as string)?.toUpperCase() === "STORE_ADMIN" ||
+      (user.role as string)?.toUpperCase() === "ADMIN" ||
+      (user.role as string)?.toUpperCase() === "SECURITY_GUARD" ||
+      user.email?.toLowerCase().includes("cashier") ||
+      user.email?.toLowerCase().includes("guard") ||
+      user.email?.toLowerCase().includes("admin"))
+  );
+  const isCustomer = !isStaff;
 
-      <div className={`relative z-[1] mx-auto flex min-h-[calc(100vh-2rem)] sm:min-h-[calc(100vh-2.5rem)] w-full ${maxWidthClass} flex-col ${showCustomerNav ? "pb-20 sm:pb-0" : ""}`}>
+  return (
+    <main className="relative min-h-screen bg-[#F8FAFC] text-[#111827] antialiased selection:bg-emerald-100 selection:text-emerald-900">
+      <div
+        className={`mx-auto flex min-h-screen w-full ${maxWidthClass} flex-col px-4 sm:px-6 py-3 sm:py-5 ${
+          showCustomerNav ? "pb-28 sm:pb-10" : "pb-10"
+        }`}
+      >
         {/* Navigation & Brand Header */}
         {showHeader && (
-          <header className="no-print relative z-30 flex items-center justify-between pb-3 pt-1 border-b border-black/5 mb-3 gap-2">
-            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <header className="no-print relative z-30 mb-4 flex items-center justify-between gap-2 sm:gap-3 rounded-2xl border border-slate-200/80 bg-white/95 px-3 sm:px-4 py-2 sm:py-2.5 shadow-xs backdrop-blur-xl">
+            {/* ── LEFT SECTION: Navigation & Logo/Title ── */}
+            <div className="flex items-center gap-2 sm:gap-2.5 min-w-0 flex-1 mr-1 sm:mr-2">
               {onBack && (
                 <button
                   type="button"
                   onClick={onBack}
-                  className="flex min-h-[40px] min-w-[40px] h-10 w-10 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-white/80 border border-black/5 text-[#7A8493] hover:text-[#0F2044] hover:bg-white shadow-sm transition active:scale-95 shrink-0"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200/80 bg-slate-50 text-slate-600 transition hover:bg-slate-100 hover:text-[#101828] active:scale-95 shadow-2xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A]"
                   aria-label={backLabel || "Back"}
                 >
-                  <svg viewBox="0 0 24 24" fill="none" className="h-4 w-4" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M19 12H5M5 12l6-6M5 12l6 6" />
-                  </svg>
+                  <IcBack />
                 </button>
               )}
-              <div className="min-w-0">
-                <p className="font-poppins text-lg sm:text-[20px] font-bold tracking-[-0.03em] text-[#0F2044] leading-tight">
-                  QLESS
-                </p>
-                <p className="text-[11px] sm:text-xs font-medium text-[#7A8493] truncate">
-                  Session #{sessionId} · {selectedStore ? selectedStore.chain : "Store"}
+              <div className="min-w-0 flex-1 overflow-hidden">
+                <div className="flex items-center gap-1.5 flex-nowrap">
+                  <span className="font-poppins text-lg sm:text-xl font-black tracking-[-0.04em] text-[#101828] leading-none shrink-0">
+                    QLESS
+                  </span>
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-1.5 sm:px-2 py-0.5 text-[8.5px] sm:text-[9px] font-bold text-[#16A36A] border border-emerald-200/60 leading-none shrink-0">
+                    <span className="h-1.5 w-1.5 rounded-full bg-[#16A36A] animate-pulse" />
+                    LIVE
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[11px] font-medium text-[#667085] truncate leading-tight mt-0.5 max-w-full">
+                  {selectedStore ? selectedStore.name || selectedStore.chain : "QLess Mart"}
+                  {sessionId ? ` · #${String(sessionId).slice(-6)}` : ""}
                 </p>
               </div>
             </div>
 
+            {/* ── RIGHT SECTION: Actions & Profile ── */}
             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => navigate("/history")}
-                className="flex min-h-[36px] items-center gap-1 rounded-full border border-white/60 bg-white/90 px-2 sm:px-2.5 py-1 text-xs font-semibold text-[#0F2044] shadow-xs backdrop-blur-sm hover:bg-white transition active:scale-95"
-                title="View shopping history"
-                aria-label="View shopping history"
-              >
-                <span>🕒</span>
-                <span className="hidden sm:inline">History</span>
-                {orderHistory.length > 0 && (
-                  <span className="rounded-full bg-[#0F2044] text-white text-[9px] px-1 py-0.2">
-                    {orderHistory.length}
-                  </span>
-                )}
-              </button>
+              {/* Customer Shopping Quick Actions */}
+              {isCustomer ? (
+                <>
+                  {/* Orders button (Icon-only with notification count badge) */}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/history")}
+                    className="relative flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200/80 bg-white text-slate-600 shadow-2xs hover:bg-slate-50 transition active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A] cursor-pointer"
+                    title="View order history"
+                    aria-label={`View order history, ${orderHistory.length} orders`}
+                  >
+                    <IcHistory className="h-4 w-4 text-slate-600" />
+                    {orderHistory.length > 0 && (
+                      <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#101828] text-white text-[9px] font-bold px-1 ring-2 ring-white shadow-xs">
+                        {orderHistory.length > 99 ? "99+" : orderHistory.length}
+                      </span>
+                    )}
+                  </button>
 
-              <span className="min-h-[36px] flex items-center rounded-full border border-white/60 bg-white/90 px-2 sm:px-3 py-1 text-xs font-semibold text-[#2E9E44] shadow-xs backdrop-blur-sm">
-                {itemCount} {itemCount === 1 ? "item" : "items"}
-              </span>
+                  {/* Cart button (Icon + count only) */}
+                  <button
+                    type="button"
+                    onClick={() => navigate("/shop")}
+                    className="flex h-9 min-w-[36px] items-center justify-center gap-1 rounded-xl border border-emerald-200/80 bg-emerald-50/80 px-2 text-xs font-bold text-[#16A36A] shadow-2xs hover:bg-emerald-100 transition active:scale-95 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A]"
+                    title="View Cart"
+                    aria-label={`View Cart, ${itemCount} items`}
+                  >
+                    <IcCart className="h-3.5 w-3.5 shrink-0" />
+                    <span className="tabular-nums text-xs font-bold">{itemCount}</span>
+                  </button>
+                </>
+              ) : (
+                /* Role-specific Operations Desk Quick-Link (Icon-only) */
+                <>
+                  {(user?.role === "CASHIER" || user?.email?.toLowerCase().includes("cashier")) && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/cashier")}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-blue-200 bg-blue-50/90 text-blue-700 shadow-2xs hover:bg-blue-100 transition active:scale-95 cursor-pointer"
+                      title="Return to Cashier Desk"
+                      aria-label="Return to Cashier Desk"
+                    >
+                      <IcUser className="h-4 w-4" />
+                    </button>
+                  )}
+                  {(user?.role === "ADMIN" || user?.role === "STORE_ADMIN" || user?.email?.toLowerCase().includes("admin")) && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/admin")}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-purple-200 bg-purple-50/90 text-purple-700 shadow-2xs hover:bg-purple-100 transition active:scale-95 cursor-pointer"
+                      title="Return to Admin Console"
+                      aria-label="Return to Admin Console"
+                    >
+                      <IcShield className="h-4 w-4" />
+                    </button>
+                  )}
+                  {(user?.role === "SECURITY_GUARD" || user?.email?.toLowerCase().includes("guard")) && (
+                    <button
+                      type="button"
+                      onClick={() => navigate("/security")}
+                      className="flex h-9 w-9 items-center justify-center rounded-xl border border-amber-200 bg-amber-50/90 text-amber-800 shadow-2xs hover:bg-amber-100 transition active:scale-95 cursor-pointer"
+                      title="Return to Security Terminal"
+                      aria-label="Return to Security Terminal"
+                    >
+                      <IcScan className="h-4 w-4" />
+                    </button>
+                  )}
+                </>
+              )}
 
-              {/* Authentication Status / Profile Pill with Dropdown */}
+              {/* Authentication Status / Profile Pill with Dropdown (Icon-only avatar + chevron) */}
               {isAuthenticated && user ? (
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                    className="flex min-h-[36px] items-center gap-1.5 rounded-full border border-white/60 bg-white/95 px-2 sm:px-2.5 py-1 text-xs font-semibold text-[#0F2044] shadow-xs hover:bg-white transition active:scale-95"
+                    className="flex h-9 items-center justify-center gap-1 rounded-xl border border-slate-200/80 bg-white px-2 text-xs font-semibold text-[#111827] shadow-2xs hover:bg-slate-50 active:scale-95 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A] cursor-pointer"
                     title={`Logged in as ${user.name} (${user.role})`}
+                    aria-label={`User menu for ${user.name}`}
                   >
-                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#0F2044] text-[10px] text-white font-bold">
-                      {user.avatarInitials}
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#101828] text-[9.5px] text-white font-bold leading-none">
+                      {user.avatarInitials || user.name.slice(0, 1).toUpperCase()}
                     </span>
-                    <span className="hidden sm:inline max-w-[80px] truncate">{user.name.split(" ")[0]}</span>
-                    <span className="text-[9px] text-[#7A8493]">▾</span>
+                    <span className="text-[10px] text-slate-400 select-none">▾</span>
                   </button>
 
                   {/* Dropdown Menu */}
@@ -115,11 +194,11 @@ export function CustomerLayout({
                         className="fixed inset-0 z-40"
                         onClick={() => setIsUserMenuOpen(false)}
                       />
-                      <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-black/10 bg-white p-2.5 shadow-2xl z-[100] animate-in fade-in zoom-in-95 duration-100 text-xs">
-                        <div className="px-3 py-2 border-b border-black/5 mb-1.5">
-                          <p className="font-bold text-[#0F2044] truncate">{user.name}</p>
-                          <p className="text-[10px] text-[#7A8493] truncate">{user.email}</p>
-                          <span className="mt-1 inline-block rounded-full bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 border border-emerald-200/60">
+                      <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-slate-200/90 bg-white p-2 shadow-xl z-[100] qless-scale-in text-xs">
+                        <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                          <p className="font-bold text-[#101828] truncate">{user.name}</p>
+                          <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                          <span className="mt-1 inline-block rounded-full bg-emerald-50 text-[#16A36A] text-[9px] font-bold px-2 py-0.5 border border-emerald-200/60">
                             {user.role} · Verified
                           </span>
                         </div>
@@ -131,9 +210,9 @@ export function CustomerLayout({
                               setIsUserMenuOpen(false);
                               navigate("/profile");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#111827] hover:bg-slate-50 transition cursor-pointer"
                           >
-                            <span>👤</span>
+                            <IcUser className="h-4 w-4 text-slate-500" />
                             <span>My Profile</span>
                           </button>
 
@@ -143,40 +222,43 @@ export function CustomerLayout({
                               setIsUserMenuOpen(false);
                               navigate("/settings");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#111827] hover:bg-slate-50 transition cursor-pointer"
                           >
-                            <span>⚙️</span>
+                            <IcSettings className="h-4 w-4 text-slate-500" />
                             <span>Account Settings</span>
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsUserMenuOpen(false);
-                              navigate("/history");
-                            }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#0F2044] hover:bg-black/5 transition cursor-pointer"
-                          >
-                            <span>🕒</span>
-                            <span>Order History</span>
-                          </button>
+                          {/* Only regular shoppers have customer order history */}
+                          {isCustomer && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setIsUserMenuOpen(false);
+                                navigate("/history");
+                              }}
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-medium text-[#111827] hover:bg-slate-50 transition cursor-pointer"
+                            >
+                              <IcHistory className="h-4 w-4 text-slate-500" />
+                              <span>Order History</span>
+                            </button>
+                          )}
 
-                          {/* Authorized staff portal access (strictly matching role, never non-authenticated roles) */}
-                          {(user.role === "ADMIN" || user.role === "STORE_ADMIN") && (
+                          {/* Authorized staff portal access */}
+                          {(user?.role === "ADMIN" || user?.role === "STORE_ADMIN" || user?.email?.toLowerCase().includes("admin")) && (
                             <button
                               type="button"
                               onClick={() => {
                                 setIsUserMenuOpen(false);
                                 navigate("/admin");
                               }}
-                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 transition cursor-pointer"
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition cursor-pointer"
                             >
-                              <span>🛡️</span>
+                              <IcShield />
                               <span>Admin Dashboard</span>
                             </button>
                           )}
 
-                          {user.role === "SECURITY_GUARD" && (
+                          {(user?.role === "SECURITY_GUARD" || user?.email?.toLowerCase().includes("guard")) && (
                             <button
                               type="button"
                               onClick={() => {
@@ -185,27 +267,27 @@ export function CustomerLayout({
                               }}
                               className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-amber-800 bg-amber-50/70 hover:bg-amber-100 transition cursor-pointer"
                             >
-                              <span>👮</span>
+                              <IcScan />
                               <span>Security Terminal</span>
                             </button>
                           )}
 
-                          {user.role === "CASHIER" && (
+                          {(user?.role === "CASHIER" || user?.email?.toLowerCase().includes("cashier")) && (
                             <button
                               type="button"
                               onClick={() => {
                                 setIsUserMenuOpen(false);
                                 navigate("/cashier");
                               }}
-                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-indigo-700 bg-indigo-50/70 hover:bg-indigo-100 transition cursor-pointer"
+                              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-blue-700 bg-blue-50/70 hover:bg-blue-100 transition cursor-pointer"
                             >
-                              <span>🧑‍💼</span>
+                              <IcUser className="h-4 w-4" />
                               <span>Cashier Desk</span>
                             </button>
                           )}
                         </div>
 
-                        <div className="border-t border-black/5 mt-1.5 pt-1.5">
+                        <div className="border-t border-slate-100 mt-1 pt-1">
                           <button
                             type="button"
                             onClick={() => {
@@ -213,9 +295,9 @@ export function CustomerLayout({
                               logout();
                               navigate("/auth/login");
                             }}
-                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-bold text-red-600 hover:bg-red-50 transition cursor-pointer"
+                            className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-left font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
                           >
-                            <span>🚪</span>
+                            <IcLogout className="h-4 w-4 text-red-500" />
                             <span>Sign Out</span>
                           </button>
                         </div>
@@ -227,7 +309,7 @@ export function CustomerLayout({
                 <button
                   type="button"
                   onClick={() => navigate("/auth/login")}
-                  className="rounded-full border border-black/10 bg-[#0F2044] px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-slate-800 transition active:scale-95 cursor-pointer"
+                  className="rounded-xl bg-[#101828] px-3 py-1.5 text-xs font-semibold text-white shadow-2xs hover:bg-slate-800 transition active:scale-95 cursor-pointer"
                 >
                   Sign In
                 </button>
@@ -242,110 +324,165 @@ export function CustomerLayout({
         {/* Consistent Footer */}
         {showFooter && (
           <footer className="pb-2 pt-6 text-center">
-            <p className="font-alegreya text-xs text-[#7A8493] tracking-wide">
-              Scan. Pay. Go. — No queues, no waiting.
+            <p className="text-xs text-[#667085]">
+              Shop freely. Scan instantly. Pay digitally.
             </p>
           </footer>
         )}
 
-        {/* Mobile Customer Bottom Navigation Bar */}
+        {/* Mobile Navigation Bar */}
         {showCustomerNav && (
-          <nav
-            aria-label="Customer Mobile Navigation"
-            className="no-print sm:hidden fixed inset-x-0 bottom-0 z-30 border-t border-black/10 bg-white/95 backdrop-blur-xl shadow-[0_-8px_24px_rgba(15,32,68,0.12)] px-2 pt-1 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
-          >
-            <div className="grid grid-cols-5 gap-1 max-w-[440px] mx-auto">
-              {/* 1. Shop / Cart */}
-              <button
-                type="button"
-                onClick={() => navigate("/shop")}
-                className={`flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition active:scale-95 ${
-                  activeNav === "shop"
-                    ? "text-[#2E9E44] font-bold"
-                    : "text-[#7A8493] hover:text-[#0F2044]"
-                }`}
-              >
-                <div className="relative">
-                  <span className="text-lg">🛒</span>
-                  {itemCount > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#2E9E44] text-[9px] font-bold text-white px-1">
-                      {itemCount}
-                    </span>
+          isCustomer ? (
+            <nav
+              aria-label="Customer Mobile Navigation"
+              className="no-print sm:hidden fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.05)] px-3 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+            >
+              <div className="grid grid-cols-5 gap-1 max-w-[440px] mx-auto">
+                {/* 1. Shop / Cart */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/shop")}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "shop"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <div className="relative">
+                    <IcCart className={`h-5 w-5 ${activeNav === "shop" ? "text-[#16A36A]" : "text-[#667085]"}`} />
+                    {itemCount > 0 && (
+                      <span className="absolute -top-1 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#16A36A] text-[9px] font-bold text-white px-1">
+                        {itemCount}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Cart</span>
+                </button>
+
+                {/* 2. Scan Barcode */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onScanClick) onScanClick();
+                    else navigate("/shop");
+                  }}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "scan"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <IcScan />
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Scan</span>
+                </button>
+
+                {/* 3. Search Catalog */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (onSearchClick) onSearchClick();
+                    else navigate("/shop");
+                  }}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "search"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <IcSearch />
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Search</span>
+                </button>
+
+                {/* 4. Order History */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/history")}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "history"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <div className="relative">
+                    <IcHistory className={`h-5 w-5 ${activeNav === "history" ? "text-[#16A36A]" : "text-[#667085]"}`} />
+                    {orderHistory.length > 0 && (
+                      <span className="absolute -top-1 -right-2.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#101828] text-[9px] font-bold text-white px-1">
+                        {orderHistory.length}
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Orders</span>
+                </button>
+
+                {/* 5. Account / Profile */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/profile")}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "profile"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <IcUser className={`h-5 w-5 ${activeNav === "profile" ? "text-[#16A36A]" : "text-[#667085]"}`} />
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Profile</span>
+                </button>
+              </div>
+            </nav>
+          ) : (
+            <nav
+              aria-label="Staff Mobile Navigation"
+              className="no-print sm:hidden fixed inset-x-0 bottom-0 z-30 border-t border-slate-200/80 bg-white/95 backdrop-blur-xl shadow-[0_-4px_24px_rgba(0,0,0,0.05)] px-4 pt-1.5 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))]"
+            >
+              <div className="grid grid-cols-3 gap-2 max-w-[360px] mx-auto">
+                {/* 1. Return to Staff Operational Desk */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (user.role === "CASHIER") navigate("/cashier");
+                    else if (user.role === "SECURITY_GUARD") navigate("/security");
+                    else navigate("/admin");
+                  }}
+                  className="flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 text-[#101828] font-bold"
+                >
+                  {user.role === "CASHIER" ? (
+                    <IcUser className="h-5 w-5 text-blue-600" />
+                  ) : user.role === "SECURITY_GUARD" ? (
+                    <IcScan className="h-5 w-5 text-amber-600" />
+                  ) : (
+                    <IcShield className="h-5 w-5 text-purple-600" />
                   )}
-                </div>
-                <span className="text-[10px] tracking-tight leading-none mt-1">Cart</span>
-              </button>
+                  <span className="text-[10px] tracking-tight leading-none mt-1">
+                    {user.role === "CASHIER" ? "Cashier Desk" : user.role === "SECURITY_GUARD" ? "Security Desk" : "Admin Desk"}
+                  </span>
+                </button>
 
-              {/* 2. Scan Barcode */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (onScanClick) onScanClick();
-                  else navigate("/shop");
-                }}
-                className={`flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition active:scale-95 ${
-                  activeNav === "scan"
-                    ? "text-[#2E9E44] font-bold"
-                    : "text-[#7A8493] hover:text-[#0F2044]"
-                }`}
-              >
-                <span className="text-lg">📷</span>
-                <span className="text-[10px] tracking-tight leading-none mt-1">Scan</span>
-              </button>
+                {/* 2. Staff Profile */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/profile")}
+                  className={`flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 ${
+                    activeNav === "profile"
+                      ? "text-[#16A36A] font-bold"
+                      : "text-[#667085] hover:text-[#101828]"
+                  }`}
+                >
+                  <IcUser className="h-5 w-5" />
+                  <span className="text-[10px] tracking-tight leading-none mt-1">My Profile</span>
+                </button>
 
-              {/* 3. Search Catalog */}
-              <button
-                type="button"
-                onClick={() => {
-                  if (onSearchClick) onSearchClick();
-                  else navigate("/shop");
-                }}
-                className={`flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition active:scale-95 ${
-                  activeNav === "search"
-                    ? "text-[#2E9E44] font-bold"
-                    : "text-[#7A8493] hover:text-[#0F2044]"
-                }`}
-              >
-                <span className="text-lg">🔍</span>
-                <span className="text-[10px] tracking-tight leading-none mt-1">Search</span>
-              </button>
-
-              {/* 4. Order History */}
-              <button
-                type="button"
-                onClick={() => navigate("/history")}
-                className={`flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition active:scale-95 ${
-                  activeNav === "history"
-                    ? "text-[#2E9E44] font-bold"
-                    : "text-[#7A8493] hover:text-[#0F2044]"
-                }`}
-              >
-                <div className="relative">
-                  <span className="text-lg">🕒</span>
-                  {orderHistory.length > 0 && (
-                    <span className="absolute -top-1 -right-2 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#0F2044] text-[9px] font-bold text-white px-1">
-                      {orderHistory.length}
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] tracking-tight leading-none mt-1">Orders</span>
-              </button>
-
-              {/* 5. Account / Profile */}
-              <button
-                type="button"
-                onClick={() => navigate("/profile")}
-                className={`flex flex-col items-center justify-center min-h-[48px] py-1 px-1 rounded-xl transition active:scale-95 ${
-                  activeNav === "profile"
-                    ? "text-[#2E9E44] font-bold"
-                    : "text-[#7A8493] hover:text-[#0F2044]"
-                }`}
-              >
-                <span className="text-lg">👤</span>
-                <span className="text-[10px] tracking-tight leading-none mt-1">Profile</span>
-              </button>
-            </div>
-          </nav>
+                {/* 3. Account Settings */}
+                <button
+                  type="button"
+                  onClick={() => navigate("/settings")}
+                  className="flex flex-col items-center justify-center min-h-[46px] py-1 px-1 rounded-xl transition active:scale-95 text-[#667085] hover:text-[#101828]"
+                >
+                  <IcSettings className="h-5 w-5" />
+                  <span className="text-[10px] tracking-tight leading-none mt-1">Settings</span>
+                </button>
+              </div>
+            </nav>
+          )
         )}
       </div>
     </main>

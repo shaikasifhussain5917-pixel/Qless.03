@@ -867,10 +867,12 @@ export function AdminOverviewTab({
                   <span>-{fmt(inspectingOrder.couponDiscount)}</span>
                 </div>
               )}
-              <div className="flex justify-between text-slate-600">
-                <span>Tax Total (CGST 9% + SGST 9%):</span>
-                <span>{fmt(inspectingOrder.taxTotal)}</span>
-              </div>
+              {inspectingOrder.taxTotal > 0 && (
+                <div className="flex justify-between text-slate-600">
+                  <span>Taxes:</span>
+                  <span>{fmt(inspectingOrder.taxTotal)}</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-sm text-[#0F2044] pt-1.5 border-t border-slate-200">
                 <span>Final Total:</span>
                 <span className="text-[#2E9E44]">{fmt(inspectingOrder.finalTotal)}</span>

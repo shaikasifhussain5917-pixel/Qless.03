@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import { Product, ProductLocation } from "../../types";
 import { fmt } from "../../utils/formatters";
 import { useShopping } from "../../context/ShoppingContext";
-import { IcAdd, IcClose, IcSearch } from "../common/Icons";
+import { IcClose, IcScan, IcSearch } from "../common/Icons";
 import { ProductImage } from "../common/ProductImage";
 
 interface ProductSearchTabProps {
@@ -165,15 +165,16 @@ export function ProductSearchTab({
                       type="button"
                       onClick={() => onSelectProduct(product)}
                       disabled={isOutOfStock}
-                      className={`flex min-h-[44px] min-w-[44px] h-11 w-11 items-center justify-center rounded-xl transition shadow-xs ${
+                      className={`flex min-h-[44px] items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-bold transition shadow-xs cursor-pointer ${
                         isOutOfStock
                           ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                          : "bg-[#EEF8F0] text-[#2E9E44] hover:bg-[#2E9E44] hover:text-white active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
+                          : "bg-[#EEF8F0] text-[#16A36A] hover:bg-[#16A36A] hover:text-white active:scale-95 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[#16A36A]"
                       }`}
-                      aria-label={`Add ${product.name} to Cart`}
-                      title="Add to Cart"
+                      aria-label={`Scan barcode to add ${product.name}`}
+                      title="Scan Barcode to Add"
                     >
-                      <IcAdd />
+                      <IcScan />
+                      <span className="hidden sm:inline">Scan to Add</span>
                     </button>
                   </div>
                 </div>

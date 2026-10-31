@@ -7,6 +7,7 @@ import { EmptyState } from "../common/EmptyState";
 import { useShopping } from "../../context/ShoppingContext";
 import { useAuth } from "../../context/AuthContext";
 import { isSupabaseConfigured } from "../../lib/supabase";
+import { StockErrorModal, parseStockError, type StockErrorItem } from "../ui/StockErrorModal";
 import {
   loadRazorpayCheckoutScript,
   createRazorpayOrderServer,
@@ -31,48 +32,66 @@ export interface PaymentPageProps {
 interface PaymentOptionConfig {
   id: PaymentMethod;
   name: string;
-  badge: string;
-  badgeColorClass: string;
-  icon: string;
-  caption: string;
+  iconType: "cash" | "upi" | "card" | "wallet";
   disabled?: boolean;
+}
+
+function PaymentTileIcon({ type, className = "h-8 w-8" }: { type: "cash" | "upi" | "card" | "wallet"; className?: string }) {
+  if (type === "cash") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect width="20" height="12" x="2" y="6" rx="2" />
+        <circle cx="12" cy="12" r="2" />
+        <path d="M6 12h.01M18 12h.01" />
+      </svg>
+    );
+  }
+  if (type === "upi") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+      </svg>
+    );
+  }
+  if (type === "card") {
+    return (
+      <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        <rect width="20" height="14" x="2" y="5" rx="2" />
+        <line x1="2" x2="22" y1="10" y2="10" />
+      </svg>
+    );
+  }
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+      <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+    </svg>
+  );
 }
 
 const PAYMENT_OPTIONS: PaymentOptionConfig[] = [
   {
     id: "cash",
-    name: "Cash — Pay at Cashier Counter",
-    badge: "Active Pilot Method",
-    badgeColorClass: "bg-emerald-100 border-emerald-300 text-emerald-800",
-    icon: "💵",
-    caption: "Pay with physical cash at Counter #03 before exit verification.",
+    name: "Cash at Counter",
+    iconType: "cash",
     disabled: false,
   },
   {
     id: "upi",
-    name: "UPI (Test Mode)",
-    badge: "TEST MODE — Not a real payment",
-    badgeColorClass: "bg-amber-100 border-amber-300 text-amber-900",
-    icon: "⚡",
-    caption: "Test digital payment via Razorpay mock UPI gateway.",
+    name: "UPI",
+    iconType: "upi",
     disabled: false,
   },
   {
     id: "card",
-    name: "Debit / Credit Card (Test Mode)",
-    badge: "TEST MODE — Not a real payment",
-    badgeColorClass: "bg-blue-100 border-blue-300 text-blue-900",
-    icon: "💳",
-    caption: "Test digital payment via Razorpay mock Card gateway.",
+    name: "Credit/Debit Card",
+    iconType: "card",
     disabled: false,
   },
   {
     id: "wallet",
     name: "QLess Wallet",
-    badge: "Unavailable",
-    badgeColorClass: "bg-slate-100 border-slate-300 text-slate-600",
-    icon: "👛",
-    caption: "QLess Wallet is not available during test mode.",
+    iconType: "wallet",
     disabled: true,
   },
 ];
@@ -125,6 +144,28 @@ export function PaymentPage({
   const [processMessage, setProcessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isNetworkTimeout, setIsNetworkTimeout] = useState<boolean>(false);
+  const [stockModalItems, setStockModalItems] = useState<StockErrorItem[] | null>(null);
+
+  /**
+   * Dispatches checkout errors: Insufficient stock errors open the professional StockErrorModal
+   * and suppress the footer alert note. Non-stock errors are shown in the footer note.
+   */
+  const handleCheckoutError = useCallback(
+    (err: string | null | undefined, isNetwork = false) => {
+      if (!err) return;
+      const parsed = parseStockError(err);
+      if (parsed && parsed.length > 0) {
+        setStockModalItems(parsed);
+        setErrorMessage(null);
+        setIsNetworkTimeout(false);
+      } else {
+        setStockModalItems(null);
+        setIsNetworkTimeout(isNetwork);
+        setErrorMessage(err);
+      }
+    },
+    []
+  );
 
   // Retain pending digital order reference if staged in database
   const [pendingDigitalOrder, setPendingDigitalOrder] = useState<CompletedOrder | null>(null);
@@ -206,6 +247,7 @@ export function PaymentPage({
       // 5. Clear stale errors, warnings, and messages relating to previous method
       setErrorMessage(null);
       setIsNetworkTimeout(false);
+      setStockModalItems(null);
       setProcessState("ready");
       setProcessMessage("");
 
@@ -258,7 +300,7 @@ export function PaymentPage({
 
       const cartValidation = validateCartForCheckout(itemsToValidate, appliedCoupon);
       if (!cartValidation.isValid) {
-        setErrorMessage(cartValidation.errors.join(" "));
+        handleCheckoutError(cartValidation.errors.join(" "));
         return;
       }
     }
@@ -302,17 +344,10 @@ export function PaymentPage({
           if (!result.success) {
             isSubmittingRef.current = false;
             setProcessState("failure");
-
-            if (result.isNetworkError) {
-              setIsNetworkTimeout(true);
-              setErrorMessage(
-                result.error ||
-                  "A network timeout occurred while contacting the database. You can safely retry without duplicate orders."
-              );
-            } else {
-              setIsNetworkTimeout(false);
-              setErrorMessage(result.error || "Checkout was declined by the store database.");
-            }
+            handleCheckoutError(
+              result.error || "Checkout was declined by the store database.",
+              result.isNetworkError
+            );
             return;
           }
 
@@ -344,7 +379,7 @@ export function PaymentPage({
           if (activePaymentAttemptIdRef.current !== attemptId) return;
           isSubmittingRef.current = false;
           setProcessState("failure");
-          setErrorMessage(err instanceof Error ? err.message : "Error placing cash order.");
+          handleCheckoutError(err instanceof Error ? err.message : "Error placing cash order.");
         } finally {
           isSubmittingRef.current = false;
         }
@@ -383,7 +418,10 @@ export function PaymentPage({
           if (!checkoutResult.success || !checkoutResult.order || !checkoutResult.orderId) {
             isSubmittingRef.current = false;
             setProcessState("failure");
-            setErrorMessage(checkoutResult.error || "Checkout was declined by the store database.");
+            handleCheckoutError(
+              checkoutResult.error || "Checkout was declined by the store database.",
+              checkoutResult.isNetworkError
+            );
             return;
           }
           activeOrder = checkoutResult.order;
@@ -526,7 +564,7 @@ export function PaymentPage({
         if (activePaymentAttemptIdRef.current !== attemptId) return;
         isSubmittingRef.current = false;
         setProcessState("failure");
-        setErrorMessage(err instanceof Error ? err.message : "Error during digital checkout.");
+        handleCheckoutError(err instanceof Error ? err.message : "Error during digital checkout.");
       } finally {
         isSubmittingRef.current = false;
       }
@@ -617,18 +655,18 @@ export function PaymentPage({
       </div>
 
       <div className="space-y-3 sm:space-y-3.5">
-        {/* ── B. ORDER SUMMARY CARD (Compact, Mobile-Friendly) ── */}
+        {/* ── B. ORDER SUMMARY CARD (Simple, Clean, Easy to Understand) ── */}
         <section
           aria-label="Order summary breakdown"
-          className="rounded-2xl border border-white/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_4px_16px_rgba(15,32,68,0.06)] backdrop-blur-md space-y-2.5"
+          className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-xs space-y-3"
         >
-          <div className="flex items-center justify-between border-b border-black/5 pb-2">
+          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
             <div className="flex items-center gap-2">
               <span className="text-base" aria-hidden="true">🧾</span>
-              <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-[#0F2044]">
+              <h3 className="font-poppins text-xs sm:text-sm font-bold uppercase tracking-wider text-[#0F2044]">
                 Order Summary
               </h3>
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-700">
+              <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[10px] font-bold text-slate-700">
                 {bill.itemCount} {bill.itemCount === 1 ? "item" : "items"}
               </span>
             </div>
@@ -639,14 +677,14 @@ export function PaymentPage({
                 if (onEditOrder) onEditOrder();
                 else onBack();
               }}
-              className="text-[11px] font-semibold text-[#2E9E44] hover:underline"
+              className="text-xs font-semibold text-[#2E9E44] hover:underline focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[#2E9E44] rounded"
             >
               Edit Items
             </button>
           </div>
 
           {/* Compact Product List Preview */}
-          <div className="text-xs space-y-1 pt-0.5">
+          <div className="text-xs space-y-1.5">
             {effectiveItems.slice(0, showItemDetails ? undefined : 2).map((item) => (
               <div key={item.id} className="flex items-center justify-between text-[#0F2044]">
                 <div className="flex items-center gap-2 truncate pr-2">
@@ -673,212 +711,171 @@ export function PaymentPage({
             )}
           </div>
 
-          {/* Financial Breakdown */}
-          <div className="border-t border-black/5 pt-2 space-y-1 text-xs text-[#7A8493]">
-            <div className="flex justify-between">
-              <span>Subtotal ({bill.itemCount} items)</span>
-              <span className="font-mono text-[#0F2044]">{fmt(bill.subtotal)}</span>
+          {/* Simplified Order Summary: Items Subtotal, Discount (if applicable), Total Payable */}
+          <div className="border-t border-slate-100 pt-3 space-y-2 text-xs text-[#7A8493]">
+            <div className="flex items-center justify-between">
+              <span>Items Subtotal ({bill.itemCount} {bill.itemCount === 1 ? "item" : "items"})</span>
+              <span className="font-mono font-medium text-[#0F2044]">{fmt(bill.subtotal)}</span>
             </div>
-
-            {bill.mrpSavings > 0 && (
-              <div className="flex justify-between text-[#2E9E44]">
-                <span>Total MRP Savings</span>
-                <span className="font-mono font-medium">-{fmt(bill.mrpSavings)}</span>
-              </div>
-            )}
 
             {bill.couponDiscount > 0 && (
-              <div className="flex justify-between text-[#2E9E44]">
-                <span>Coupon Discount ({appliedCoupon?.code || "APPLIED"})</span>
-                <span className="font-mono font-medium">-{fmt(bill.couponDiscount)}</span>
+              <div className="flex items-center justify-between text-[#2E9E44]">
+                <span>Discount ({appliedCoupon?.code || "Coupon"})</span>
+                <span className="font-mono font-semibold">−{fmt(bill.couponDiscount)}</span>
               </div>
             )}
 
-            <div className="flex justify-between text-[11px] text-[#8A94A3]">
-              <span>Taxes (CGST 2.5% + SGST 2.5%)</span>
-              <span className="font-mono">{fmt(bill.taxTotal)}</span>
-            </div>
+            {bill.mrpSavings > 0 && (
+              <div className="flex items-center justify-between text-emerald-700 bg-emerald-50/80 px-2.5 py-1.5 rounded-xl border border-emerald-200/60 text-[11px]">
+                <span className="font-medium">Total MRP Savings (Already Discounted)</span>
+                <span className="font-mono font-bold">Saved {fmt(bill.mrpSavings)}</span>
+              </div>
+            )}
 
             {/* Total Amount Payable */}
-            <div className="flex items-baseline justify-between border-t border-black/5 pt-2 text-[#0F2044]">
+            <div className="flex items-baseline justify-between border-t border-slate-100 pt-3 text-[#0F2044]">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block leading-none">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8A94A3] block leading-none mb-1">
                   Total Payable
                 </span>
-                <span className="font-poppins text-lg sm:text-xl font-extrabold text-[#0F2044]">
-                  {fmt(bill.finalTotal)}
+                <span className="text-[10px] text-slate-400">
+                  Inclusive of all charges
                 </span>
               </div>
-
-              <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
-                {selectedMethod === "cash" ? "💵 Cash at Counter" : selectedMethod === "upi" ? "⚡ UPI Test" : "💳 Card Test"}
-              </span>
+              <div className="text-right">
+                <span className="font-poppins text-xl sm:text-2xl font-extrabold text-[#0F2044] block">
+                  {fmt(bill.finalTotal)}
+                </span>
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200/80 inline-block mt-0.5">
+                  {selectedMethod === "cash" ? "💵 Cash at Counter" : selectedMethod === "upi" ? "⚡ UPI Test" : "💳 Card Test"}
+                </span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── C. PAYMENT METHOD SELECTION (Compact Cards) ── */}
-        <section aria-label="Available payment methods" className="space-y-2">
+        {/* ── C. PAYMENT METHOD SELECTION (Apple-Style Minimal 2x2 Grid) ── */}
+        <section aria-label="Available payment methods" className="space-y-3">
           <div className="flex items-center justify-between px-1">
             <h3 className="font-poppins text-xs font-bold uppercase tracking-wider text-[#0F2044]">
               Select Payment Method
             </h3>
-            <span className="text-[10px] text-[#7A8493]">
-              Tap an option below
+            <span className="text-[11px] text-[#7A8493]">
+              Choose one
             </span>
           </div>
 
+          {/* 2×2 Grid of Equal Square Tiles */}
           <div
             role="radiogroup"
             aria-label="Payment method selection"
-            className="space-y-2"
+            className="grid grid-cols-2 gap-3 sm:gap-4 max-w-sm sm:max-w-md mx-auto"
           >
             {PAYMENT_OPTIONS.map((method) => {
               const isSelected = selectedMethod === method.id;
               const isItemDisabled = isSubmittingRef.current || isCheckingOut || !!method.disabled;
 
               return (
-                <div
+                <button
                   key={method.id}
+                  type="button"
                   role="radio"
                   aria-checked={isSelected}
                   aria-disabled={isItemDisabled}
-                  tabIndex={isItemDisabled ? -1 : 0}
+                  disabled={isItemDisabled}
                   onClick={() => {
                     if (!isItemDisabled) {
                       handleSelectPaymentMethod(method.id);
                     }
                   }}
-                  onKeyDown={(e) => {
-                    if (isItemDisabled) return;
-                    if (e.key === "Enter" || e.key === " ") {
-                      e.preventDefault();
-                      handleSelectPaymentMethod(method.id);
-                    }
-                  }}
-                  className={`rounded-2xl border-2 p-3 transition-all outline-none ${
+                  className={`aspect-square w-full min-h-[110px] max-h-[125px] flex flex-col items-center justify-center rounded-2xl transition-all duration-200 outline-none select-none ${
                     isItemDisabled
-                      ? "cursor-not-allowed border-black/5 bg-slate-50/70 opacity-60"
+                      ? "bg-slate-50 border border-slate-200/60 text-slate-300 opacity-60 cursor-not-allowed"
                       : isSelected
-                      ? "cursor-pointer border-[#2E9E44] bg-[#EEF8F0]/80 shadow-[0_4px_14px_rgba(46,158,68,0.14)] focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
-                      : "cursor-pointer border-black/5 bg-white/90 hover:border-black/15 hover:bg-white focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
+                      ? "bg-[#EEF4FF] border-2 border-[#1E40AF] text-[#1E40AF] shadow-xs scale-[1.02] cursor-pointer"
+                      : "bg-white border border-slate-200/90 text-slate-700 hover:border-slate-300 hover:bg-slate-50/60 active:scale-95 shadow-2xs cursor-pointer"
                   }`}
                 >
-                  <div className="flex items-center justify-between gap-2.5">
-                    <div className="flex items-center gap-2.5 min-w-0 pr-1">
-                      {/* Radio Circle Indicator */}
-                      <div
-                        className={`flex h-4.5 w-4.5 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                          isSelected
-                            ? "border-[#2E9E44] bg-[#2E9E44]"
-                            : isItemDisabled
-                            ? "border-slate-300 bg-slate-100"
-                            : "border-[#D8DDE3] bg-white"
-                        }`}
-                      >
-                        {isSelected && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
-                      </div>
-
-                      <span className="text-xl shrink-0" aria-hidden="true">
-                        {method.icon}
-                      </span>
-
-                      <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <span className="font-poppins text-xs sm:text-sm font-bold text-[#0F2044]">
-                            {method.name}
-                          </span>
-                          <span
-                            className={`rounded px-1.5 py-0.2 text-[9px] font-bold shrink-0 border ${method.badgeColorClass}`}
-                          >
-                            {method.badge}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-[#7A8493] truncate mt-0.5">
-                          {method.caption}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      {method.disabled ? (
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200">
-                          Unavailable
-                        </span>
-                      ) : (
-                        <span className="font-poppins text-xs font-bold text-[#0F2044]">
-                          {fmt(bill.finalTotal)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
+                  <PaymentTileIcon
+                    type={method.iconType}
+                    className={`h-9 w-9 transition-transform duration-200 ${
+                      isSelected ? "scale-110 text-[#1E40AF]" : isItemDisabled ? "text-slate-300" : "text-slate-700"
+                    }`}
+                  />
+                  <span className={`mt-2 font-poppins text-xs transition-colors ${
+                    isSelected ? "font-bold text-[#1E40AF]" : isItemDisabled ? "font-medium text-slate-400" : "font-semibold text-slate-800"
+                  }`}>
+                    {method.name}
+                  </span>
+                </button>
               );
             })}
           </div>
 
-          {/* Active Method Contextual Helper Notice */}
-          <div className="pt-0.5">
+          {/* Contextual Information Displayed Below the Grid */}
+          <div className="pt-1">
             {selectedMethod === "cash" && (
-              <div className="rounded-xl border border-amber-200 bg-amber-50/90 p-3 text-xs text-amber-950 shadow-2xs space-y-1">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-lg shrink-0" aria-hidden="true">💵</span>
-                  <div>
-                    <h4 className="font-poppins text-xs font-bold text-amber-900">
-                      Cash at Cashier Counter #03
-                    </h4>
-                    <p className="text-[11px] leading-relaxed text-amber-800 mt-0.5">
-                      Your order will be registered in the store database. Please proceed to <strong>Counter #03</strong> to pay in physical cash. Your exit pass will unlock upon cashier verification.
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-950 flex items-start gap-2.5 qless-fade-in shadow-2xs">
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-800 text-xs font-bold mt-0.5">
+                  📍
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h4 className="font-poppins text-xs font-bold text-blue-950">
+                    Pay at Cashier Counter #03
+                  </h4>
+                  <p className="text-[11px] text-blue-800/80 mt-0.5 leading-relaxed">
+                    Settle with physical cash at Counter #03. Your digital exit pass will unlock upon cashier verification.
+                  </p>
                 </div>
               </div>
             )}
 
             {selectedMethod === "upi" && (
-              <div className="rounded-xl border border-emerald-300 bg-emerald-50/90 p-3 text-xs text-emerald-950 shadow-2xs space-y-1.5">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-lg shrink-0" aria-hidden="true">⚡</span>
-                  <div className="space-y-1 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-poppins text-xs font-bold text-emerald-900">
-                        UPI Test Mode (Sandbox Simulation)
-                      </h4>
-                      <span className="rounded bg-emerald-200/80 px-1.5 py-0.2 text-[9px] font-bold text-emerald-900">
-                        Demo
-                      </span>
-                    </div>
-                    <p className="text-[11px] leading-relaxed text-emerald-800">
-                      In the Razorpay test popup, use test VPA:{" "}
-                      <code className="bg-emerald-100 font-mono font-bold text-emerald-900 px-1 py-0.5 rounded">
-                        success@razorpay
-                      </code>
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-950 space-y-1.5 qless-fade-in shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
+                    ⚡
+                  </span>
+                  <h4 className="font-poppins text-xs font-bold text-blue-950">
+                    Test Mode — Not a real payment
+                  </h4>
                 </div>
+                <p className="text-[11px] text-blue-800/80 leading-relaxed">
+                  In the Razorpay test popup, use test VPA:{" "}
+                  <code className="bg-blue-100/90 font-mono font-bold text-blue-900 px-1 py-0.5 rounded">
+                    success@razorpay
+                  </code>
+                </p>
               </div>
             )}
 
             {selectedMethod === "card" && (
-              <div className="rounded-xl border border-blue-200 bg-blue-50/90 p-3 text-xs text-blue-950 shadow-2xs">
-                <div className="flex items-start gap-2.5">
-                  <span className="text-lg shrink-0" aria-hidden="true">💳</span>
-                  <div>
-                    <h4 className="font-poppins text-xs font-bold text-blue-900">
-                      Card Payment Test Mode
-                    </h4>
-                    <p className="text-[11px] text-blue-800 mt-0.5">
-                      Use Razorpay test cards in the popup to simulate Visa/Mastercard approval without real funds.
-                    </p>
-                  </div>
+              <div className="rounded-2xl border border-blue-100 bg-blue-50/60 p-3.5 text-xs text-blue-950 space-y-1.5 qless-fade-in shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
+                    💳
+                  </span>
+                  <h4 className="font-poppins text-xs font-bold text-blue-950">
+                    Test Mode — Not a real payment
+                  </h4>
                 </div>
+                <p className="text-[11px] text-blue-800/80 leading-relaxed">
+                  Use Razorpay test cards in the popup to simulate Visa/Mastercard approval without real funds.
+                </p>
+              </div>
+            )}
+
+            {selectedMethod === "wallet" && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3.5 text-xs text-slate-700 flex items-center gap-2.5 qless-fade-in shadow-2xs">
+                <span className="text-base">👛</span>
+                <p className="font-medium text-slate-700">Currently unavailable</p>
               </div>
             )}
           </div>
         </section>
 
-        {/* ── ERROR ALERT BANNER ── */}
-        {errorMessage && (
+        {/* ── ERROR ALERT BANNER (Non-stock errors only; insufficient stock displays professional modal) ── */}
+        {errorMessage && !parseStockError(errorMessage) && (
           <div
             role="alert"
             aria-live="polite"
@@ -905,7 +902,7 @@ export function PaymentPage({
 
       {/* ── D. PRIMARY ACTION BUTTON (Fixed Bottom Bar, Highly Visible on Mobile) ── */}
       <div className="fixed inset-x-0 bottom-0 z-30 px-3 pb-3 sm:pb-4">
-        <div className="mx-auto w-full max-w-[520px] rounded-2xl border border-white/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_-10px_30px_rgba(15,32,68,0.14)] backdrop-blur-xl space-y-2.5">
+        <div className="mx-auto w-full max-w-[520px] rounded-2xl border border-slate-200/80 bg-white/95 p-3.5 sm:p-4 shadow-[0_-10px_30px_rgba(15,32,68,0.1)] backdrop-blur-xl space-y-2.5">
           <div className="flex items-center justify-between text-xs border-b border-black/5 pb-2">
             <span className="text-[#7A8493] text-[11px]">Selected Method:</span>
             <span className="font-bold text-[#0F2044] flex items-center gap-1.5 text-xs">
@@ -914,9 +911,9 @@ export function PaymentPage({
                 {selectedMethod === "cash"
                   ? "Cash at Counter #03"
                   : selectedMethod === "upi"
-                  ? "UPI (Test Mode)"
+                  ? "UPI"
                   : selectedMethod === "card"
-                  ? "Card (Test Mode)"
+                  ? "Credit/Debit Card"
                   : "QLess Wallet"}
               </span>
             </span>
@@ -926,7 +923,7 @@ export function PaymentPage({
             type="button"
             onClick={handleInitiatePayment}
             disabled={isProcessing || isWalletInsufficient || selectedMethod === "wallet"}
-            className="flex h-12 sm:h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#2E9E44] font-poppins text-xs sm:text-sm font-bold text-white shadow-[0_8px_20px_rgba(46,158,68,0.25)] transition hover:scale-[1.01] hover:bg-[#288B3B] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2E9E44]"
+            className="flex h-12 sm:h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#16A36A] font-poppins text-xs sm:text-sm font-bold text-white shadow-sm transition hover:bg-[#15803d] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#16A36A]"
           >
             {isProcessing ? (
               <>
@@ -941,22 +938,49 @@ export function PaymentPage({
                 <IcCheck />
                 <span>Place Cash Order — {fmt(bill.finalTotal)}</span>
               </>
-            ) : selectedMethod === "wallet" ? (
-              <span>Wallet Unavailable (Test Mode)</span>
-            ) : pendingDigitalOrder && (selectedMethod === "upi" || selectedMethod === "card") ? (
+            ) : selectedMethod === "upi" ? (
               <>
                 <IcCheck />
-                <span>Retry Razorpay Payment — {fmt(bill.finalTotal)}</span>
+                <span>Continue with UPI — {fmt(bill.finalTotal)}</span>
+              </>
+            ) : selectedMethod === "card" ? (
+              <>
+                <IcCheck />
+                <span>Continue with Card — {fmt(bill.finalTotal)}</span>
+              </>
+            ) : selectedMethod === "wallet" ? (
+              <span>Wallet Currently Unavailable</span>
+            ) : pendingDigitalOrder ? (
+              <>
+                <IcCheck />
+                <span>Retry Payment — {fmt(bill.finalTotal)}</span>
               </>
             ) : (
               <>
                 <IcCheck />
-                <span>Pay {fmt(bill.finalTotal)} with {selectedMethod === "upi" ? "UPI" : "Card"} (Test Mode)</span>
+                <span>Pay {fmt(bill.finalTotal)}</span>
               </>
             )}
           </button>
         </div>
       </div>
+
+      {/* ── INSUFFICIENT STOCK POPUP MODAL ── */}
+      <StockErrorModal
+        open={Boolean(stockModalItems && stockModalItems.length > 0)}
+        items={stockModalItems || []}
+        onReviewCart={() => {
+          setStockModalItems(null);
+          if (onEditOrder) {
+            onEditOrder();
+          } else {
+            onBack();
+          }
+        }}
+        onClose={() => {
+          setStockModalItems(null);
+        }}
+      />
     </div>
   );
 }

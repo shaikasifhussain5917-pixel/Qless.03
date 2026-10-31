@@ -36,8 +36,8 @@ export function AuthLayout({
 
       <div className={`relative z-[1] w-full ${maxWidthClass} mx-auto my-auto flex flex-col`}>
         {/* Top Header Bar */}
-        <header className="flex items-center justify-between pb-3 mb-3 border-b border-black/5">
-          <div className="flex items-center gap-2.5">
+        <header className="flex items-center justify-between pb-3 mb-3 border-b border-black/5 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1 overflow-hidden">
             {onBack ? (
               <button
                 type="button"

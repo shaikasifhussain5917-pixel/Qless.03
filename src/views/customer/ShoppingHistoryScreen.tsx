@@ -1,5 +1,7 @@
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useShopping } from "../../context/ShoppingContext";
+import { useAuth } from "../../context/AuthContext";
 import { CustomerLayout } from "../../layouts/CustomerLayout";
 import { fmt } from "../../utils/formatters";
 import { IcBack } from "../../components/common/Icons";
@@ -8,6 +10,42 @@ import { EmptyState } from "../../components/common/EmptyState";
 export function ShoppingHistoryScreen() {
   const navigate = useNavigate();
   const { orderHistory, setSelectedHistoryOrder } = useShopping();
+  const { user } = useAuth();
+
+  const isStaff = Boolean(
+    user &&
+    (user.role === "CASHIER" ||
+      user.role === "STORE_ADMIN" ||
+      user.role === "ADMIN" ||
+      user.role === "SECURITY_GUARD" ||
+      (user.role as string)?.toUpperCase() === "CASHIER" ||
+      (user.role as string)?.toUpperCase() === "STORE_ADMIN" ||
+      (user.role as string)?.toUpperCase() === "ADMIN" ||
+      (user.role as string)?.toUpperCase() === "SECURITY_GUARD" ||
+      user.email?.toLowerCase().includes("cashier") ||
+      user.email?.toLowerCase().includes("guard") ||
+      user.email?.toLowerCase().includes("admin"))
+  );
+
+  // Automatically redirect staff to their operational workstation desk
+  useEffect(() => {
+    if (isStaff) {
+      if (user?.role === "CASHIER" || user?.email?.toLowerCase().includes("cashier")) {
+        navigate("/cashier", { replace: true });
+      } else if (user?.role === "SECURITY_GUARD" || user?.email?.toLowerCase().includes("guard")) {
+        navigate("/security", { replace: true });
+      } else {
+        navigate("/admin", { replace: true });
+      }
+    }
+  }, [isStaff, user, navigate]);
+
+  const handleBack = () => {
+    if (user?.role === "CASHIER") navigate("/cashier");
+    else if (user?.role === "ADMIN" || user?.role === "STORE_ADMIN") navigate("/admin");
+    else if (user?.role === "SECURITY_GUARD") navigate("/security");
+    else navigate("/shop");
+  };
 
   const handleViewReceipt = (orderId: string) => {
     const order = orderHistory.find((o) => o.orderId === orderId);
@@ -25,6 +63,56 @@ export function ShoppingHistoryScreen() {
     navigate(`/exit-pass/${orderId}`);
   };
 
+  const returnLabel =
+    user?.role === "CASHIER" || user?.email?.toLowerCase().includes("cashier")
+      ? "Cashier Desk"
+      : user?.role === "ADMIN" || user?.role === "STORE_ADMIN" || user?.email?.toLowerCase().includes("admin")
+      ? "Admin Console"
+      : user?.role === "SECURITY_GUARD" || user?.email?.toLowerCase().includes("guard")
+      ? "Security Desk"
+      : "Shop";
+
+  const emptyStateProps =
+    user?.role === "CASHIER"
+      ? {
+          emoji: "🧾",
+          title: "Cashier Terminal Active",
+          description: "Customer settlements and cash register payments are processed directly at your cashier desk.",
+          action: {
+            label: "Return to Cashier Desk",
+            onClick: () => navigate("/cashier"),
+          },
+        }
+      : user?.role === "ADMIN" || user?.role === "STORE_ADMIN"
+      ? {
+          emoji: "📊",
+          title: "Admin Console Active",
+          description: "Store performance, inventory levels, and transaction logs are managed inside the Admin Console.",
+          action: {
+            label: "Return to Admin Console",
+            onClick: () => navigate("/admin"),
+          },
+        }
+      : user?.role === "SECURITY_GUARD"
+      ? {
+          emoji: "🛡️",
+          title: "Security Terminal Active",
+          description: "Customer exit passes and physical turnstile clearances are verified at the security gate.",
+          action: {
+            label: "Return to Security Desk",
+            onClick: () => navigate("/security"),
+          },
+        }
+      : {
+          emoji: "🛍️",
+          title: "No Shopping History Yet",
+          description: "When you complete a self-checkout payment, your receipts and exit passes will appear here.",
+          action: {
+            label: "Start Shopping",
+            onClick: () => navigate("/shop"),
+          },
+        };
+
   return (
     <CustomerLayout
       showHeader={true}
@@ -32,18 +120,18 @@ export function ShoppingHistoryScreen() {
       maxWidthClass="max-w-[520px]"
       showCustomerNav={true}
       activeNav="history"
-      onBack={() => navigate("/shop")}
-      backLabel="Back to Cart"
+      onBack={handleBack}
+      backLabel={returnLabel}
     >
       <div className="flex flex-1 flex-col qless-fade-in pb-12 w-full">
         {/* Header */}
         <div className="mb-4 flex items-center justify-between">
           <button
-            onClick={() => navigate("/shop")}
+            onClick={handleBack}
             className="flex items-center gap-1.5 text-xs font-semibold text-[#7A8493] transition hover:text-[#0F2044]"
           >
             <IcBack />
-            <span>Active Shopping Trip</span>
+            <span>Return to {returnLabel}</span>
           </button>
 
           <span className="rounded-full bg-white border border-black/10 px-2.5 py-0.5 text-[11px] font-bold text-[#0F2044]">
@@ -53,10 +141,12 @@ export function ShoppingHistoryScreen() {
 
         <div>
           <h2 className="font-poppins text-2xl font-bold tracking-tight text-[#0F2044]">
-            Shopping History
+            {isStaff ? "Store Transactions & Receipts" : "Shopping History"}
           </h2>
           <p className="mt-0.5 text-xs text-[#7A8493]">
-            Verified self-checkout receipts and stored exit passes
+            {isStaff
+              ? "Verified self-checkout receipts and customer exit passes"
+              : "Verified self-checkout receipts and stored exit passes"}
           </p>
         </div>
 
@@ -64,13 +154,10 @@ export function ShoppingHistoryScreen() {
         {orderHistory.length === 0 ? (
           <div className="mt-8">
             <EmptyState
-              emoji="🛍️"
-              title="No Shopping History Yet"
-              description="When you complete a self-checkout payment, your itemised tax receipts and exit passes will appear here."
-              action={{
-                label: "Start Shopping",
-                onClick: () => navigate("/shop"),
-              }}
+              emoji={emptyStateProps.emoji}
+              title={emptyStateProps.title}
+              description={emptyStateProps.description}
+              action={emptyStateProps.action}
             />
           </div>
         ) : (

@@ -572,10 +572,6 @@ export function CashierScreen() {
                     <span>−{fmt(selectedOrder.couponDiscount)}</span>
                   </div>
                 )}
-                <div className="flex justify-between text-[#7A8493]">
-                  <span>Taxes (CGST + SGST)</span>
-                  <span>+{fmt(selectedOrder.taxTotal)}</span>
-                </div>
                 <div className="flex justify-between border-t border-black/10 pt-2 font-poppins text-base font-extrabold text-[#0F2044]">
                   <span>Total Cash to Collect:</span>
                   <span className="text-[#2E9E44] text-lg">{fmt(selectedOrder.finalTotal)}</span>
